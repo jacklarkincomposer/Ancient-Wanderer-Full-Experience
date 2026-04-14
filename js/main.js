@@ -5,7 +5,9 @@ import { createStemLoader } from './stem-loader.js';
 import { createScrollController } from './scroll-controller.js';
 import { initUI } from './ui.js';
 
-const compositionId = new URLSearchParams(window.location.search).get('c') || 'ancient-wanderer';
+const compositionId = new URLSearchParams(window.location.search).get('c')
+  || document.body.dataset.composition
+  || 'ancient-wanderer';
 const configUrl = `compositions/${compositionId}/config.json`;
 
 async function boot() {
@@ -71,6 +73,15 @@ async function boot() {
     loadingBar.style.width = '30%';
 
     await engine.init();
+
+    // Restore volume carried over from the previous chapter
+    const savedVol = sessionStorage.getItem('aw_volume');
+    if (savedVol) {
+      sessionStorage.removeItem('aw_volume');
+      document.getElementById('vol').value = savedVol;
+      engine.setMasterGain(savedVol);
+    }
+
     await engine.decodePreFetched(allInitial);
 
     loadingBar.style.width = '100%';

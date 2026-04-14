@@ -47,9 +47,16 @@ export function createAudioEngine(config) {
     analyserData = new Uint8Array(analyser.frequencyBinCount);
     impactGain = actx.createGain();
     impactGain.gain.value = 1;
+    const limiter = actx.createDynamicsCompressor();
+    limiter.threshold.value = -2;  // start limiting 2 dB below 0 — transparent in normal use
+    limiter.knee.value = 2;        // slight soft knee
+    limiter.ratio.value = 20;      // 20:1 — effective brick wall
+    limiter.attack.value = 0.001;  // 1 ms — catches transient peaks before they clip
+    limiter.release.value = 0.15;  // 150 ms release
     mg.connect(analyser);
     analyser.connect(impactGain);
-    impactGain.connect(actx.destination);
+    impactGain.connect(limiter);
+    limiter.connect(actx.destination);
   }
 
   // ── Stem loading ──
@@ -497,19 +504,32 @@ export function createAudioEngine(config) {
       const def = stemMap[id];
       return def && def.intro ? [id, def.intro] : [id];
     }))];
-    await Promise.all(expanded.map(async id => {
-      if (!prefetchedBuffers[id] || loadedStems.has(id) || buf[id]) return;
-      try {
-        buf[id] = await actx.decodeAudioData(prefetchedBuffers[id]);
-        delete prefetchedBuffers[id];
-        if (buf[id]) {
-          if (introStemIds.has(id) || stingerIds.has(id)) {
-            // One-shot stem: buffer ready for playback, not added to loop scheduler
-            stemLoadedCallbacks.forEach(cb => cb(id));
-            return;
-          }
-          if (droneIds.has(id)) {
-            // Drone: enters loadedStems and gets a gain node, loop scheduler ignores it
+    // Decode in groups of 4 — decoding all at once freezes the UI thread on mobile
+    const BATCH = 4;
+    for (let i = 0; i < expanded.length; i += BATCH) {
+      await Promise.all(expanded.slice(i, i + BATCH).map(async id => {
+        if (!prefetchedBuffers[id] || loadedStems.has(id) || buf[id]) return;
+        try {
+          buf[id] = await actx.decodeAudioData(prefetchedBuffers[id]);
+          delete prefetchedBuffers[id];
+          if (buf[id]) {
+            if (introStemIds.has(id) || stingerIds.has(id)) {
+              // One-shot stem: buffer ready for playback, not added to loop scheduler
+              stemLoadedCallbacks.forEach(cb => cb(id));
+              return;
+            }
+            if (droneIds.has(id)) {
+              // Drone: enters loadedStems and gets a gain node, loop scheduler ignores it
+              loadedStems.add(id);
+              if (!gain[id]) {
+                const g = actx.createGain();
+                g.gain.value = 0;
+                g.connect(mg);
+                gain[id] = g;
+              }
+              stemLoadedCallbacks.forEach(cb => cb(id));
+              return;
+            }
             loadedStems.add(id);
             if (!gain[id]) {
               const g = actx.createGain();
@@ -517,23 +537,16 @@ export function createAudioEngine(config) {
               g.connect(mg);
               gain[id] = g;
             }
+            scheduleImmediately(id);
             stemLoadedCallbacks.forEach(cb => cb(id));
-            return;
           }
-          loadedStems.add(id);
-          if (!gain[id]) {
-            const g = actx.createGain();
-            g.gain.value = 0;
-            g.connect(mg);
-            gain[id] = g;
-          }
-          scheduleImmediately(id);
-          stemLoadedCallbacks.forEach(cb => cb(id));
+        } catch (e) {
+          console.warn('Decode failed:', id, e);
         }
-      } catch (e) {
-        console.warn('Decode failed:', id, e);
-      }
-    }));
+      }));
+      // Yield to the UI thread between batches so the phone stays responsive
+      if (i + BATCH < expanded.length) await new Promise(r => setTimeout(r, 0));
+    }
   }
 
   // ── Event hooks ──
@@ -543,6 +556,10 @@ export function createAudioEngine(config) {
 
   function resumeContext() {
     if (actx && actx.state === 'suspended') actx.resume();
+  }
+
+  function suspendContext() {
+    if (actx && actx.state === 'running') actx.suspend();
   }
 
   return {
@@ -569,6 +586,7 @@ export function createAudioEngine(config) {
     decodePreFetched,
     onStemLoaded,
     resumeContext,
+    suspendContext,
     get currentRoomIndex() { return currentRoomIndex; },
     get activeStems() { return new Set(activeStems); },
     get ready() { return ready; },

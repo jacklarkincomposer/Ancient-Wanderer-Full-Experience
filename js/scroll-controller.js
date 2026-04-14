@@ -197,9 +197,19 @@ export function createScrollController(config, engine, loader, ui) {
               const fadeDelay = (ct.finalFadeAfterLoops || 3) * config.audio.defaultLoop.duration * 1000;
               setTimeout(() => {
                 engine.fadeOutMaster();
-                setTimeout(() => ui.stopVisualiser(), config.audio.masterFadeOut * 1000);
+                setTimeout(() => {
+                  ui.stopVisualiser();
+                  navigateToNextChapter(config);
+                }, config.audio.masterFadeOut * 1000);
               }, fadeDelay);
             }, 2000);
+          } else if (config.composition && config.composition.nextChapter) {
+            // No credits — just fade out and hand off to the next chapter
+            engine.fadeOutMaster();
+            setTimeout(() => {
+              ui.stopVisualiser();
+              navigateToNextChapter(config);
+            }, config.audio.masterFadeOut * 1000);
           }
         }, holdMs);
       }
@@ -207,6 +217,13 @@ export function createScrollController(config, engine, loader, ui) {
 
     if (idx >= 0) checkStingers(idx);
     checkImpactWeight();
+  }
+
+  // ── Chapter handoff ──
+  function navigateToNextChapter(cfg) {
+    if (!cfg.composition || !cfg.composition.nextChapter) return;
+    sessionStorage.setItem('aw_volume', document.getElementById('vol').value);
+    window.location.href = cfg.composition.nextChapter;
   }
 
   // ── Auto scroll ──
@@ -272,8 +289,17 @@ export function createScrollController(config, engine, loader, ui) {
 
     // Cancel auto-scroll on manual input
     window.addEventListener('wheel', cancelAS, { passive: true });
-    window.addEventListener('touchstart', cancelAS, { passive: true });
+    window.addEventListener('touchstart', (e) => { engine.resumeContext(); cancelAS(e); }, { passive: true });
     window.addEventListener('pointerdown', cancelAS, { passive: true });
+
+    // Suspend audio when tab is hidden, resume when visible — saves battery and handles Safari suspension
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        engine.suspendContext();
+      } else {
+        engine.resumeContext();
+      }
+    });
 
     // Run initial scroll check
     onScroll();

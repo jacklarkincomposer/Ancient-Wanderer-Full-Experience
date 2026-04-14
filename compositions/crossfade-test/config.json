@@ -32,7 +32,7 @@
   },
   {
     "id": "harp_intro",
-    "file": "Ch1Intro_orchestra.mp3",
+    "file": "Ch1/Intro_orchestra.mp3",
     "label": "Harp Intro",
     "group": "strings"
   },
