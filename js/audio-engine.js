@@ -26,6 +26,7 @@ export function createAudioEngine(config) {
   stemDefs.forEach(s => { if (s.intro) introStemIds.add(s.intro); });
   const playedIntros = new Set(); // loop stem IDs whose one-shot intro has already fired this page session
   const pendingIntroEnds = new Map(); // id → Web Audio timestamp when the intro finishes, so the scheduler waits for it
+  const droneTimers = {}; // id → setTimeout handle for drone self-rescheduling
 
   const prefetchedBuffers = {}; // id → ArrayBuffer (raw, not decoded)
 
@@ -136,10 +137,13 @@ export function createAudioEngine(config) {
 
   function unloadStems(ids) {
     ids.forEach(id => {
-      // Force-stop drone sources before evicting — they loop indefinitely otherwise
-      if (droneIds.has(id) && lastInstance[id]) {
-        try { lastInstance[id].source.stop(); } catch (e) {}
-        try { lastInstance[id].instGain.disconnect(); } catch (e) {}
+      // Cancel drone rescheduling and stop any running instance before evicting
+      if (droneIds.has(id)) {
+        if (droneTimers[id]) { clearTimeout(droneTimers[id]); delete droneTimers[id]; }
+        if (lastInstance[id]) {
+          try { lastInstance[id].source.stop(); } catch (e) {}
+          try { lastInstance[id].instGain.disconnect(); } catch (e) {}
+        }
       }
       if (gain[id]) {
         gain[id].disconnect();
@@ -231,40 +235,42 @@ export function createAudioEngine(config) {
     schedTimer = null;
   }
 
+  // ── Drone self-scheduling ──
+  // Schedules the next drone instance to start (duration - tailFade) seconds after currentStartTime,
+  // producing a crossfade at the loop boundary instead of a hard cut.
+  // The crossfade duration is capped at half the file length so short files can still loop.
+  function scheduleDroneNext(id, currentStartTime) {
+    const def = stemMap[id];
+    const tailFade = def && def.tailFade != null ? def.tailFade : 3;
+    const duration = buf[id].duration;
+    const crossfade = Math.min(tailFade, duration * 0.5);
+    const nextStartTime = currentStartTime + duration - crossfade;
+    const msUntilNext = Math.max(0, (nextStartTime - actx.currentTime) * 1000);
+    droneTimers[id] = setTimeout(() => {
+      delete droneTimers[id];
+      if (!activeStems.has(id) || !buf[id] || !gain[id]) return;
+      createInstance(id, nextStartTime);
+      scheduleDroneNext(id, nextStartTime);
+    }, msUntilNext);
+  }
+
   // ── Stem activation ──
   function fadeIn(id, duration) {
     if (activeStems.has(id)) return;
     activeStems.add(id);
 
     if (droneIds.has(id)) {
-      // Drone: start a continuously looping source — no scheduler involvement
+      // Drone: play once then self-schedule with crossfade — same createInstance mechanism as loop stems,
+      // but driven by a setTimeout chain rather than the phase-locked scheduler.
+      // This avoids the MP3 encoder-delay gap that src.loop = true produces at the loop boundary.
       if (!buf[id] || !gain[id]) {
         pendingFades.set(id, currentRoomIndex);
         return;
       }
-      const prev = lastInstance[id];
-      if (prev) {
-        try { prev.source.stop(); } catch (e) {}
-        try { prev.instGain.disconnect(); } catch (e) {}
-        lastInstance[id] = null;
-      }
-      const src = actx.createBufferSource();
-      src.buffer = buf[id];
-      src.loop = true;
-      const instGain = actx.createGain();
-      instGain.gain.value = 1;
-      src.connect(instGain);
-      instGain.connect(gain[id]);
-      src.start(actx.currentTime + 0.05);
-      activeSrc.push(src);
-      const instance = { source: src, instGain };
-      lastInstance[id] = instance;
-      src.onended = () => {
-        const i = activeSrc.indexOf(src);
-        if (i > -1) activeSrc.splice(i, 1);
-        try { instGain.disconnect(); } catch (e) {}
-        if (lastInstance[id] === instance) lastInstance[id] = null;
-      };
+      if (droneTimers[id]) { clearTimeout(droneTimers[id]); delete droneTimers[id]; }
+      const startTime = actx.currentTime + 0.05;
+      createInstance(id, startTime);
+      scheduleDroneNext(id, startTime);
     } else {
       // Loop stem: play intro variant once on first entry, routed through the loop stem's gain node.
       // The scheduler is blocked from creating loop instances until the intro finishes.
@@ -341,14 +347,10 @@ export function createAudioEngine(config) {
     g.gain.cancelScheduledValues(now);
     g.gain.setValueAtTime(g.gain.value, now);
     g.gain.linearRampToValueAtTime(0, now + dur);
-    // Stop drone's looping source after it fades — it loops indefinitely otherwise
-    if (droneIds.has(id)) {
-      const inst = lastInstance[id];
-      if (inst) {
-        setTimeout(() => {
-          try { inst.source.stop(); } catch (e) {}
-        }, (dur + 0.1) * 1000);
-      }
+    // Cancel drone's rescheduling timer — existing instances play out and end naturally
+    if (droneIds.has(id) && droneTimers[id]) {
+      clearTimeout(droneTimers[id]);
+      delete droneTimers[id];
     }
   }
 
