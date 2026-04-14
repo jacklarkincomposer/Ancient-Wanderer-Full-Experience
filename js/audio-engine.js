@@ -245,6 +245,9 @@ export function createAudioEngine(config) {
         if (!schedRunning || !buf[id] || !gain[id]) return;
         pendingIntroEnds.delete(id);
         createInstance(id, introEndTime);
+        // Re-anchor the global generation grid so the next scheduler tick falls one full loop after the
+        // intro handoff, not at a stale boundary from before the intro started.
+        schedNext = Math.max(schedNext, introEndTime + currentLoopDuration);
       }, msUntilSchedule);
     }
 
