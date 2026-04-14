@@ -97,7 +97,11 @@ export function createAudioEngine(config) {
           if (pendingFades.has(id)) {
             const roomIdx = pendingFades.get(id);
             pendingFades.delete(id);
-            if (roomIdx === currentRoomIndex) fadeIn(id);
+            if (roomIdx === currentRoomIndex) {
+              // setRoom added to activeStems directly (stem wasn't loaded yet) — undo so fadeIn can re-process
+              activeStems.delete(id);
+              fadeIn(id);
+            }
           }
           stemLoadedCallbacks.forEach(cb => cb(id));
         } else {
@@ -118,6 +122,8 @@ export function createAudioEngine(config) {
             const roomIdx = pendingFades.get(id);
             pendingFades.delete(id);
             if (roomIdx === currentRoomIndex) {
+              // setRoom added to activeStems directly (stem wasn't loaded yet) — undo so fadeIn can re-process
+              activeStems.delete(id);
               fadeIn(id);
             }
           }

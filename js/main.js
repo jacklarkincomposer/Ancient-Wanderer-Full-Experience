@@ -40,8 +40,10 @@ async function boot() {
   document.getElementById('as-btn').addEventListener('click', () => scroll.toggleAS());
 
   // ── Phase 1: fetch audio in background (no AudioContext needed) ──
-  const initialStems = config.rooms[0].stems;
-  const nextStems = config.rooms.length > 1 ? config.rooms[1].stems : [];
+  const r0 = config.rooms[0];
+  const r1 = config.rooms.length > 1 ? config.rooms[1] : null;
+  const initialStems = [...r0.stems, ...(r0.drones || [])];
+  const nextStems = r1 ? [...r1.stems, ...(r1.drones || [])] : [];
   const allInitial = [...new Set([...initialStems, ...nextStems])];
   const total = allInitial.length;
 
