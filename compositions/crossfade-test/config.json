@@ -42,6 +42,6 @@
   ],
   "impacts": [],
   "stingers": [
-    { "id": "stinger_test", "file": "Boom_Stinger.mp3", "gain": 0.7 }
+    { "id": "stinger_test", "file": "Ch1/Boom_Stinger.mp3", "gain": 0.7 }
   ]
 }
