@@ -3,7 +3,7 @@
 **Composer:** Jack Larkin  
 **Portfolio:** [jacklarkincomposer.co.uk](https://jacklarkincomposer.co.uk)  
 **Contact:** jacklarkincomposer@gmail.com  
-**Live:** [wanderer.jacklarkincomposer.co.uk](https://wanderer.jacklarkincomposer.co.uk) 
+**Live:** [ancientwanderer.jacklarkincomposer.co.uk](https://ancientwanderer.jacklarkincomposer.co.uk) 
 
 An interactive audiovisual experience — a fictional ancient world told entirely through music. As you scroll, new layers of a live composition enter and dissolve with the landscape: solo strings give way to harp, percussion, choir, and full orchestra, building toward a climax and fading to silence.
 
@@ -27,8 +27,8 @@ The audio is not pre-mixed. It is assembled live in the browser from individual 
 | 2 | The Valley of Forgotten Names | Light percussion enters — warmth, recognition |
 | 3 | The World Revealed | Full orchestral swell — cello, light orchestra |
 | 4 | Where the Sea Holds Its Dead | Double bass, choir, cello — weight, stillness |
-| 5 | The Road That Leads to Itself | Full strings, medium percussion — resolution |
-| Outro | — | Full orchestra and heavy percussion — climax |
+| 5 | The Road That Leads to Itself | Full strings, choir, medium percussion — resolution |
+| Outro | — | Full strings, full orchestra, heavy percussion — climax |
 
 ### Stems
 
@@ -59,7 +59,7 @@ ancient-wanderer/
 ├── js/
 │   ├── main.js                       # Entry point — boots the experience
 │   ├── audio-engine.js               # Web Audio engine (scheduler, fades, stems)
-│   ├── stem-loader.js                # Lazy loader — 3-room sliding window
+│   ├── stem-loader.js                # Lazy loader — 4-room sliding window
 │   ├── scroll-controller.js          # Scroll → room detection, pace lock, auto-scroll
 │   └── ui.js                         # Cursor, visualiser, notifications, indicators
 │
@@ -74,7 +74,7 @@ ancient-wanderer/
 |------|---------------|
 | `main.js` | Fetches config, creates all modules, wires DOM controls, runs two-phase boot (prefetch → decode) |
 | `audio-engine.js` | AudioContext lifecycle, lookahead scheduler, GainNode fades, stem loading/eviction |
-| `stem-loader.js` | Decides which stems to load/evict based on current room position; 3-room window |
+| `stem-loader.js` | Decides which stems to load/evict based on current room position; 4-room window |
 | `scroll-controller.js` | Maps scroll position to rooms, fires `engine.setRoom()`, enforces pace locks, drives auto-scroll |
 | `ui.js` | Custom cursor, frequency visualiser, stem indicator dots, notifications, scroll arrow |
 | `config.json` | Single source of truth for all composition data |
@@ -116,7 +116,7 @@ Add an entry to the `rooms` array:
 - `id` must match the HTML element's `id` attribute for that section
 - `stems` is the set of stem IDs active in this room
 - `paceLock` is the minimum listening duration in seconds before forward scroll is allowed
-- Rooms without `paceLock` have no enforced hold
+- Rooms without `paceLock` default to a 10-second hold
 
 ### Config schema overview
 ```json
@@ -133,7 +133,7 @@ Add an entry to the `rooms` array:
   },
   "stems": [ { "id": "...", "file": "...", "label": "...", "group": "..." } ],
   "rooms": [ { "id": "...", "stems": [...], "paceLock": 10 } ],
-  "impacts": [ { "id": "...", "duckTo": 0.4, "duckIn": 1.8, "duckOut": 2.2 } ],
+  "impacts": [ { "afterRoom": "...", "id": "...", "duckTo": 0.4, "duckIn": 1.8, "duckOut": 2.2 } ],
   "stingers": []
 }
 ```
@@ -161,12 +161,13 @@ When a room transition happens and a stem needs to fade in, its `BufferSource` i
 
 ### Lazy loader
 
-The loader maintains a 3-room sliding window:
+The loader maintains a 4-room sliding window:
 
 - **Current room** — loaded and decoded first (highest priority)
 - **Next room** — loaded in the background immediately after current
 - **Previous room** — kept in memory to allow instant back-scroll
-- **Rooms 3+ behind** — evicted to free memory
+- **Two rooms back** — also retained in memory
+- **Rooms 4+ behind** — evicted to free memory
 
 ---
 
@@ -205,8 +206,6 @@ Stem audio is fetched from the Cloudflare R2 CDN. CORS headers are configured fo
 
 - **OGG/Opus compression** — Reduce stem sizes by ~90%
 - **Stingers** — One-shot audio events at specific scroll positions. Schema is in config (`stingers: []`), engine implementation pending
-- **Variable tempo per room** — Each room can define its own `loop` object with different `duration` and `bpm`
-- **Multiple compositions** — URL parameter `?c=composition-id` routes to any composition folder
 - **Video integration** — Replace static scene images with looping video clips
 - **30+ stem orchestral template** — Full orchestral group system with per-section pre-mixed stems
 

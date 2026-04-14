@@ -16,6 +16,7 @@ export function createAudioEngine(config) {
   const loadingStems = new Set();
   const pendingFades = new Map();
   const stemLoadedCallbacks = [];
+  const lastInstance = {}; // id → { source, instGain } — tracks the most recent BufferSource per stem for tail crossfade
 
   const prefetchedBuffers = {}; // id → ArrayBuffer (raw, not decoded)
 
@@ -98,20 +99,55 @@ export function createAudioEngine(config) {
       }
       delete buf[id];
       loadedStems.delete(id);
+      delete lastInstance[id];
     });
   }
 
   // ── Scheduler ──
+  // Each BufferSource gets its own instanceGain (source → instGain → gain[id] → master).
+  // This lets us fade out the previous instance independently of the incoming one,
+  // so reverb tails printed into the buffer decay cleanly instead of doubling with the new loop's attack.
+  function createInstance(id, when, offset) {
+    const src = actx.createBufferSource();
+    src.buffer = buf[id];
+    const instGain = actx.createGain();
+    instGain.gain.value = 1;
+    src.connect(instGain);
+    instGain.connect(gain[id]);
+    if (offset != null) {
+      src.start(when, offset);
+    } else {
+      src.start(when);
+    }
+    activeSrc.push(src);
+
+    // Fade out the previous instance of this stem — exponential decay matches natural reverb curve.
+    const def = stemMap[id];
+    const tailFade = def && def.tailFade != null ? def.tailFade : 3;
+    const prev = lastInstance[id];
+    if (prev) {
+      const g = prev.instGain.gain;
+      g.setValueAtTime(1, when);
+      g.exponentialRampToValueAtTime(0.0001, when + tailFade);
+      try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
+    }
+
+    const instance = { source: src, instGain };
+    lastInstance[id] = instance;
+
+    src.onended = () => {
+      const i = activeSrc.indexOf(src);
+      if (i > -1) activeSrc.splice(i, 1);
+      try { instGain.disconnect(); } catch (e) {}
+      if (lastInstance[id] === instance) lastInstance[id] = null;
+    };
+  }
+
   function scheduleImmediately(id) {
     if (!schedRunning || !buf[id] || !gain[id]) return;
     const loopStart = schedNext - currentLoopDuration;
     const loopOffset = Math.max(0, actx.currentTime - loopStart);
-    const n = actx.createBufferSource();
-    n.buffer = buf[id];
-    n.connect(gain[id]);
-    n.start(actx.currentTime + 0.05, loopOffset % currentLoopDuration);
-    activeSrc.push(n);
-    n.onended = () => { const i = activeSrc.indexOf(n); if (i > -1) activeSrc.splice(i, 1); };
+    createInstance(id, actx.currentTime + 0.05, loopOffset % currentLoopDuration);
   }
 
   function schedulerTick() {
@@ -126,12 +162,7 @@ export function createAudioEngine(config) {
   function schedGeneration(when) {
     loadedStems.forEach(id => {
       if (!buf[id] || !gain[id]) return;
-      const n = actx.createBufferSource();
-      n.buffer = buf[id];
-      n.connect(gain[id]);
-      n.start(when);
-      activeSrc.push(n);
-      n.onended = () => { const i = activeSrc.indexOf(n); if (i > -1) activeSrc.splice(i, 1); };
+      createInstance(id, when);
     });
   }
 
