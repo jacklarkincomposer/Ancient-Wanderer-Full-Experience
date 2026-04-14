@@ -8,6 +8,8 @@ export function createAudioEngine(config) {
   // Add stinger defs to stemMap so fetchStem can resolve their file paths
   (config.stingers || []).forEach(s => { stemMap[s.id] = s; });
   const stingerIds = new Set((config.stingers || []).map(s => s.id));
+  // Drone stems loop continuously on their own source — they never enter the phase-locked scheduler
+  const droneIds = new Set(stemDefs.filter(s => s.type === 'drone').map(s => s.id));
 
   let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null;
   let muted = false, ready = false, fadingOut = false;
@@ -83,6 +85,21 @@ export function createAudioEngine(config) {
         if (introStemIds.has(id) || stingerIds.has(id)) {
           // One-shot stems (intros + stingers): buffer stored for playback, never enter the loop scheduler
           stemLoadedCallbacks.forEach(cb => cb(id));
+        } else if (droneIds.has(id)) {
+          // Drone: enters loadedStems so setRoom can call fadeIn, but loop scheduler ignores it
+          loadedStems.add(id);
+          if (!gain[id]) {
+            const g = actx.createGain();
+            g.gain.value = 0;
+            g.connect(mg);
+            gain[id] = g;
+          }
+          if (pendingFades.has(id)) {
+            const roomIdx = pendingFades.get(id);
+            pendingFades.delete(id);
+            if (roomIdx === currentRoomIndex) fadeIn(id);
+          }
+          stemLoadedCallbacks.forEach(cb => cb(id));
         } else {
           loadedStems.add(id);
           // Create gain node if not already wired
@@ -113,6 +130,11 @@ export function createAudioEngine(config) {
 
   function unloadStems(ids) {
     ids.forEach(id => {
+      // Force-stop drone sources before evicting — they loop indefinitely otherwise
+      if (droneIds.has(id) && lastInstance[id]) {
+        try { lastInstance[id].source.stop(); } catch (e) {}
+        try { lastInstance[id].instGain.disconnect(); } catch (e) {}
+      }
       if (gain[id]) {
         gain[id].disconnect();
         delete gain[id];
@@ -183,6 +205,7 @@ export function createAudioEngine(config) {
   function schedGeneration(when) {
     loadedStems.forEach(id => {
       if (!buf[id] || !gain[id]) return;
+      if (droneIds.has(id)) return; // drones manage their own looping source
       // Skip this stem if its intro hasn't finished yet — the lookahead timer handles the first loop instance
       if (pendingIntroEnds.has(id) && when < pendingIntroEnds.get(id)) return;
       createInstance(id, when);
@@ -207,55 +230,86 @@ export function createAudioEngine(config) {
     if (activeStems.has(id)) return;
     activeStems.add(id);
 
-    // Play intro variant once on first entry, routed through the loop stem's gain node.
-    // The scheduler is blocked from creating loop instances until the intro finishes.
-    // A lookahead timer fires just before introEndTime and schedules the first loop instance on the audio clock.
-    const def = stemMap[id];
-    if (def && def.intro && !playedIntros.has(id) && buf[def.intro]) {
-      playedIntros.add(id);
-      if (!gain[id]) {
-        const g = actx.createGain();
-        g.gain.value = 0;
-        g.connect(mg);
-        gain[id] = g;
+    if (droneIds.has(id)) {
+      // Drone: start a continuously looping source — no scheduler involvement
+      if (!buf[id] || !gain[id]) {
+        pendingFades.set(id, currentRoomIndex);
+        return;
       }
-      const introStartTime = actx.currentTime + 0.05;
-      const introEndTime = introStartTime + buf[def.intro].duration;
-      const tailFade = def.tailFade != null ? def.tailFade : 3;
-      // Start the loop tailFade seconds before the intro ends so the crossfade
-      // mechanism bridges them — same behaviour as every loop-to-loop transition.
-      const loopStartTime = introEndTime - tailFade;
-      pendingIntroEnds.set(id, loopStartTime);
-
+      const prev = lastInstance[id];
+      if (prev) {
+        try { prev.source.stop(); } catch (e) {}
+        try { prev.instGain.disconnect(); } catch (e) {}
+        lastInstance[id] = null;
+      }
       const src = actx.createBufferSource();
-      src.buffer = buf[def.intro];
+      src.buffer = buf[id];
+      src.loop = true;
       const instGain = actx.createGain();
       instGain.gain.value = 1;
       src.connect(instGain);
       instGain.connect(gain[id]);
-      src.start(introStartTime);
+      src.start(actx.currentTime + 0.05);
       activeSrc.push(src);
-      const introInst = { source: src, instGain };
-      lastInstance[id] = introInst;
+      const instance = { source: src, instGain };
+      lastInstance[id] = instance;
       src.onended = () => {
         const i = activeSrc.indexOf(src);
         if (i > -1) activeSrc.splice(i, 1);
         try { instGain.disconnect(); } catch (e) {}
-        if (lastInstance[id] === introInst) lastInstance[id] = null;
+        if (lastInstance[id] === instance) lastInstance[id] = null;
       };
+    } else {
+      // Loop stem: play intro variant once on first entry, routed through the loop stem's gain node.
+      // The scheduler is blocked from creating loop instances until the intro finishes.
+      // A lookahead timer fires just before introEndTime and schedules the first loop instance on the audio clock.
+      const def = stemMap[id];
+      if (def && def.intro && !playedIntros.has(id) && buf[def.intro]) {
+        playedIntros.add(id);
+        if (!gain[id]) {
+          const g = actx.createGain();
+          g.gain.value = 0;
+          g.connect(mg);
+          gain[id] = g;
+        }
+        const introStartTime = actx.currentTime + 0.05;
+        const introEndTime = introStartTime + buf[def.intro].duration;
+        const tailFade = def.tailFade != null ? def.tailFade : 3;
+        // Start the loop tailFade seconds before the intro ends so the crossfade
+        // mechanism bridges them — same behaviour as every loop-to-loop transition.
+        const loopStartTime = introEndTime - tailFade;
+        pendingIntroEnds.set(id, loopStartTime);
 
-      // Fire a lookahead timer so the first loop instance is scheduled on the audio clock at introEndTime.
-      // Mirrors the existing lookahead scheduler pattern: JS timer fires ~scheduleAhead seconds early,
-      // then createInstance pins the exact start to the audio clock via BufferSource.start(introEndTime).
-      const msUntilSchedule = Math.max(0, (loopStartTime - actx.currentTime - audio.scheduleAhead) * 1000);
-      setTimeout(() => {
-        if (!schedRunning || !buf[id] || !gain[id]) return;
-        pendingIntroEnds.delete(id);
-        createInstance(id, loopStartTime);
-        // Re-anchor the global generation grid so the next scheduler tick falls one full loop after the
-        // intro handoff, not at a stale boundary from before the intro started.
-        schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
-      }, msUntilSchedule);
+        const src = actx.createBufferSource();
+        src.buffer = buf[def.intro];
+        const instGain = actx.createGain();
+        instGain.gain.value = 1;
+        src.connect(instGain);
+        instGain.connect(gain[id]);
+        src.start(introStartTime);
+        activeSrc.push(src);
+        const introInst = { source: src, instGain };
+        lastInstance[id] = introInst;
+        src.onended = () => {
+          const i = activeSrc.indexOf(src);
+          if (i > -1) activeSrc.splice(i, 1);
+          try { instGain.disconnect(); } catch (e) {}
+          if (lastInstance[id] === introInst) lastInstance[id] = null;
+        };
+
+        // Fire a lookahead timer so the first loop instance is scheduled on the audio clock at introEndTime.
+        // Mirrors the existing lookahead scheduler pattern: JS timer fires ~scheduleAhead seconds early,
+        // then createInstance pins the exact start to the audio clock via BufferSource.start(introEndTime).
+        const msUntilSchedule = Math.max(0, (loopStartTime - actx.currentTime - audio.scheduleAhead) * 1000);
+        setTimeout(() => {
+          if (!schedRunning || !buf[id] || !gain[id]) return;
+          pendingIntroEnds.delete(id);
+          createInstance(id, loopStartTime);
+          // Re-anchor the global generation grid so the next scheduler tick falls one full loop after the
+          // intro handoff, not at a stale boundary from before the intro started.
+          schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
+        }, msUntilSchedule);
+      }
     }
 
     const g = gain[id];
@@ -281,12 +335,21 @@ export function createAudioEngine(config) {
     g.gain.cancelScheduledValues(now);
     g.gain.setValueAtTime(g.gain.value, now);
     g.gain.linearRampToValueAtTime(0, now + dur);
+    // Stop drone's looping source after it fades — it loops indefinitely otherwise
+    if (droneIds.has(id)) {
+      const inst = lastInstance[id];
+      if (inst) {
+        setTimeout(() => {
+          try { inst.source.stop(); } catch (e) {}
+        }, (dur + 0.1) * 1000);
+      }
+    }
   }
 
   function setRoom(idx) {
     if (idx === currentRoomIndex || idx < 0) return null;
     const room = config.rooms[idx];
-    const target = new Set(room.stems);
+    const target = new Set([...room.stems, ...(room.drones || [])]);
     const allStemIds = stemDefs.map(s => s.id);
 
     const entering = [];
@@ -434,6 +497,18 @@ export function createAudioEngine(config) {
         if (buf[id]) {
           if (introStemIds.has(id) || stingerIds.has(id)) {
             // One-shot stem: buffer ready for playback, not added to loop scheduler
+            stemLoadedCallbacks.forEach(cb => cb(id));
+            return;
+          }
+          if (droneIds.has(id)) {
+            // Drone: enters loadedStems and gets a gain node, loop scheduler ignores it
+            loadedStems.add(id);
+            if (!gain[id]) {
+              const g = actx.createGain();
+              g.gain.value = 0;
+              g.connect(mg);
+              gain[id] = g;
+            }
             stemLoadedCallbacks.forEach(cb => cb(id));
             return;
           }

@@ -35,10 +35,17 @@
     "file": "Ch1/Intro_orchestra.mp3",
     "label": "Harp Intro",
     "group": "strings"
+  },
+  {
+    "id": "drone_test",
+    "file": "Ch1/S01_Harp_01.mp3",
+    "label": "Test Drone",
+    "group": "ambient",
+    "type": "drone"
   }
 ],
   "rooms": [
-    { "id": "scene-1", "stems": ["harp"], "paceLock": 10, "stingers": [{ "id": "stinger_test", "atScrollRatio": 0.5 }] }
+    { "id": "scene-1", "stems": ["harp"], "drones": ["drone_test"], "paceLock": 10, "stingers": [{ "id": "stinger_test", "atScrollRatio": 0.5 }] }
   ],
   "impacts": [],
   "stingers": [
