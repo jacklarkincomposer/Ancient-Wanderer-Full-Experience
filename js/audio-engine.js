@@ -5,6 +5,9 @@ export function createAudioEngine(config) {
   const { audio, stems: stemDefs } = config;
   const stemMap = {};
   stemDefs.forEach(s => { stemMap[s.id] = s; });
+  // Add stinger defs to stemMap so fetchStem can resolve their file paths
+  (config.stingers || []).forEach(s => { stemMap[s.id] = s; });
+  const stingerIds = new Set((config.stingers || []).map(s => s.id));
 
   let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null;
   let muted = false, ready = false, fadingOut = false;
@@ -77,8 +80,8 @@ export function createAudioEngine(config) {
       buf[id] = await fetchStem(id, 1);
       loadingStems.delete(id);
       if (buf[id]) {
-        if (introStemIds.has(id)) {
-          // Intro stems: buffer stored for one-shot playback, never enter the loop scheduler
+        if (introStemIds.has(id) || stingerIds.has(id)) {
+          // One-shot stems (intros + stingers): buffer stored for playback, never enter the loop scheduler
           stemLoadedCallbacks.forEach(cb => cb(id));
         } else {
           loadedStems.add(id);
@@ -429,8 +432,8 @@ export function createAudioEngine(config) {
         buf[id] = await actx.decodeAudioData(prefetchedBuffers[id]);
         delete prefetchedBuffers[id];
         if (buf[id]) {
-          if (introStemIds.has(id)) {
-            // Intro stem: buffer ready for one-shot use, not added to loop scheduler
+          if (introStemIds.has(id) || stingerIds.has(id)) {
+            // One-shot stem: buffer ready for playback, not added to loop scheduler
             stemLoadedCallbacks.forEach(cb => cb(id));
             return;
           }

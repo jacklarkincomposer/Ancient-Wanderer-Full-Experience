@@ -38,8 +38,10 @@
   }
 ],
   "rooms": [
-    { "id": "scene-1", "stems": ["harp"], "paceLock": 10 }
+    { "id": "scene-1", "stems": ["harp"], "paceLock": 10, "stingers": [{ "id": "stinger_test", "atScrollRatio": 0.5 }] }
   ],
   "impacts": [],
-  "stingers": []
+  "stingers": [
+    { "id": "stinger_test", "file": "Boom_Stinger.mp3", "gain": 0.7 }
+  ]
 }

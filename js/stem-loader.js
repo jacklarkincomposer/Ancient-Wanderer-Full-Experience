@@ -5,7 +5,8 @@ export function createStemLoader(engine, config) {
 
   function getStemsForRoom(idx) {
     if (idx < 0 || idx >= rooms.length) return [];
-    return rooms[idx].stems;
+    const stingerIds = (rooms[idx].stingers || []).map(s => s.id);
+    return [...rooms[idx].stems, ...stingerIds];
   }
 
   function getUniqueStemsForRoom(idx) {

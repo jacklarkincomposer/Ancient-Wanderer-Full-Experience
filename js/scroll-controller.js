@@ -3,6 +3,7 @@
 export function createScrollController(config, engine, loader, ui) {
   const rooms = config.rooms;
   const impacts = config.impacts || [];
+  const firedStingers = new Set();
 
   // ── Pace lock ──
   const pl = document.getElementById('pace-lock');
@@ -67,6 +68,25 @@ export function createScrollController(config, engine, loader, ui) {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); revealObs.unobserve(e.target); } });
   }, { threshold: 0, rootMargin: '0px 0px -15% 0px' });
   document.querySelectorAll('.scene,.impact').forEach(el => revealObs.observe(el));
+
+  // ── Stinger firing ──
+  function checkStingers(roomIdx) {
+    if (roomIdx < 0 || roomIdx >= rooms.length) return;
+    const room = rooms[roomIdx];
+    if (!room.stingers || !room.stingers.length) return;
+    const el = document.getElementById(room.id);
+    if (!el) return;
+    const sectionTop = el.offsetTop;
+    const sectionHeight = el.offsetHeight;
+    room.stingers.forEach(s => {
+      if (firedStingers.has(s.id)) return;
+      const triggerY = sectionTop + sectionHeight * s.atScrollRatio;
+      if (window.scrollY + window.innerHeight * 0.5 >= triggerY) {
+        firedStingers.add(s.id);
+        engine.playStinger(s.id);
+      }
+    });
+  }
 
   // ── Impact weight ──
   let impactThinned = false;
@@ -185,6 +205,7 @@ export function createScrollController(config, engine, loader, ui) {
       }
     }
 
+    if (idx >= 0) checkStingers(idx);
     checkImpactWeight();
   }
 
