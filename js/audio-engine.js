@@ -218,7 +218,11 @@ export function createAudioEngine(config) {
       }
       const introStartTime = actx.currentTime + 0.05;
       const introEndTime = introStartTime + buf[def.intro].duration;
-      pendingIntroEnds.set(id, introEndTime);
+      const tailFade = def.tailFade != null ? def.tailFade : 3;
+      // Start the loop tailFade seconds before the intro ends so the crossfade
+      // mechanism bridges them — same behaviour as every loop-to-loop transition.
+      const loopStartTime = introEndTime - tailFade;
+      pendingIntroEnds.set(id, loopStartTime);
 
       const src = actx.createBufferSource();
       src.buffer = buf[def.intro];
@@ -240,14 +244,14 @@ export function createAudioEngine(config) {
       // Fire a lookahead timer so the first loop instance is scheduled on the audio clock at introEndTime.
       // Mirrors the existing lookahead scheduler pattern: JS timer fires ~scheduleAhead seconds early,
       // then createInstance pins the exact start to the audio clock via BufferSource.start(introEndTime).
-      const msUntilSchedule = Math.max(0, (introEndTime - actx.currentTime - audio.scheduleAhead) * 1000);
+      const msUntilSchedule = Math.max(0, (loopStartTime - actx.currentTime - audio.scheduleAhead) * 1000);
       setTimeout(() => {
         if (!schedRunning || !buf[id] || !gain[id]) return;
         pendingIntroEnds.delete(id);
-        createInstance(id, introEndTime);
+        createInstance(id, loopStartTime);
         // Re-anchor the global generation grid so the next scheduler tick falls one full loop after the
         // intro handoff, not at a stale boundary from before the intro started.
-        schedNext = Math.max(schedNext, introEndTime + currentLoopDuration);
+        schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
       }, msUntilSchedule);
     }
 
