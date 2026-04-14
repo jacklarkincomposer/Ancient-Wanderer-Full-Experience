@@ -20,6 +20,7 @@ export function createAudioEngine(config) {
   const introStemIds = new Set(); // stem IDs that serve as intro variants (referenced by another stem's .intro field)
   stemDefs.forEach(s => { if (s.intro) introStemIds.add(s.intro); });
   const playedIntros = new Set(); // loop stem IDs whose one-shot intro has already fired this page session
+  const pendingIntroEnds = new Map(); // id → Web Audio timestamp when the intro finishes, so the scheduler waits for it
 
   const prefetchedBuffers = {}; // id → ArrayBuffer (raw, not decoded)
 
@@ -116,6 +117,7 @@ export function createAudioEngine(config) {
       delete buf[id];
       loadedStems.delete(id);
       delete lastInstance[id];
+      pendingIntroEnds.delete(id);
     });
   }
 
@@ -178,6 +180,8 @@ export function createAudioEngine(config) {
   function schedGeneration(when) {
     loadedStems.forEach(id => {
       if (!buf[id] || !gain[id]) return;
+      // Skip this stem if its intro hasn't finished yet — the lookahead timer handles the first loop instance
+      if (pendingIntroEnds.has(id) && when < pendingIntroEnds.get(id)) return;
       createInstance(id, when);
     });
   }
@@ -201,7 +205,8 @@ export function createAudioEngine(config) {
     activeStems.add(id);
 
     // Play intro variant once on first entry, routed through the loop stem's gain node.
-    // Registers as lastInstance[id] so the crossfade system bridges intro → loop at schedNext.
+    // The scheduler is blocked from creating loop instances until the intro finishes.
+    // A lookahead timer fires just before introEndTime and schedules the first loop instance on the audio clock.
     const def = stemMap[id];
     if (def && def.intro && !playedIntros.has(id) && buf[def.intro]) {
       playedIntros.add(id);
@@ -211,13 +216,17 @@ export function createAudioEngine(config) {
         g.connect(mg);
         gain[id] = g;
       }
+      const introStartTime = actx.currentTime + 0.05;
+      const introEndTime = introStartTime + buf[def.intro].duration;
+      pendingIntroEnds.set(id, introEndTime);
+
       const src = actx.createBufferSource();
       src.buffer = buf[def.intro];
       const instGain = actx.createGain();
       instGain.gain.value = 1;
       src.connect(instGain);
       instGain.connect(gain[id]);
-      src.start(actx.currentTime + 0.05);
+      src.start(introStartTime);
       activeSrc.push(src);
       const introInst = { source: src, instGain };
       lastInstance[id] = introInst;
@@ -227,6 +236,16 @@ export function createAudioEngine(config) {
         try { instGain.disconnect(); } catch (e) {}
         if (lastInstance[id] === introInst) lastInstance[id] = null;
       };
+
+      // Fire a lookahead timer so the first loop instance is scheduled on the audio clock at introEndTime.
+      // Mirrors the existing lookahead scheduler pattern: JS timer fires ~scheduleAhead seconds early,
+      // then createInstance pins the exact start to the audio clock via BufferSource.start(introEndTime).
+      const msUntilSchedule = Math.max(0, (introEndTime - actx.currentTime - audio.scheduleAhead) * 1000);
+      setTimeout(() => {
+        if (!schedRunning || !buf[id] || !gain[id]) return;
+        pendingIntroEnds.delete(id);
+        createInstance(id, introEndTime);
+      }, msUntilSchedule);
     }
 
     const g = gain[id];
