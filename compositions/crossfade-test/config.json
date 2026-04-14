@@ -38,7 +38,7 @@
   },
   {
     "id": "drone_test",
-    "file": "Ch1/S01_Harp_01.mp3",
+    "file": "Ch1/Drone.mp3",
     "label": "Test Drone",
     "group": "ambient",
     "type": "drone"
