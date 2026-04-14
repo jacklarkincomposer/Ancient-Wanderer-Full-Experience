@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "composition": {
+    "id": "ancient-wanderer",
+    "title": "The Ancient Wanderer",
+    "subtitle": "Original Composition",
+    "composer": "Jack Larkin"
+  },
+  "audio": {
+    "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Stems/",
+    "defaultLoop": {
+      "duration": 19.2,
+      "bars": 16,
+      "bpm": 150,
+      "timeSignature": [3, 4]
+    },
+    "fadeIn": 3,
+    "fadeOut": 4,
+    "masterGain": 0.8,
+    "masterFadeOut": 8,
+    "scheduleAhead": 1.5,
+    "scheduleInterval": 200
+  },
+  "stems": [
+    { "id": "solo",       "file": "Solo_Strings_Melody.wav", "label": "Solo String",  "group": "strings" },
+    { "id": "harp",       "file": "Harp.wav",                "label": "Harp",          "group": "strings" },
+    { "id": "lightperc",  "file": "Light_Percussion.wav",    "label": "Light Perc",    "group": "percussion" },
+    { "id": "cello",      "file": "Cello_Bass.wav",          "label": "Cello",         "group": "strings" },
+    { "id": "lightorc",   "file": "Light_Orchestra.wav",     "label": "Light Orc",     "group": "orchestra" },
+    { "id": "doublebass", "file": "Double_Bass.wav",          "label": "Double Bass",   "group": "strings" },
+    { "id": "choir",      "file": "Choir.wav",               "label": "Choir",          "group": "vocals" },
+    { "id": "medperc",    "file": "Med_Percussion.wav",      "label": "Med Perc",       "group": "percussion" },
+    { "id": "fullstring", "file": "Full_Strings_Melody.wav", "label": "Full Strings",   "group": "strings" },
+    { "id": "fullorc",    "file": "Full_Orchestra.wav",      "label": "Full Orc",       "group": "orchestra" },
+    { "id": "heavyperc",  "file": "Heavy_Percussion.wav",    "label": "Heavy Perc",     "group": "percussion" }
+  ],
+  "rooms": [
+    { "id": "scene-1", "stems": ["solo", "harp"], "paceLock": 10 },
+    { "id": "scene-2", "stems": ["solo", "harp", "lightperc"], "paceLock": 10 },
+    { "id": "scene-3", "stems": ["solo", "harp", "lightperc", "cello", "lightorc"], "paceLock": 10 },
+    { "id": "scene-4", "stems": ["solo", "cello", "doublebass", "choir"], "paceLock": 10 },
+    { "id": "scene-5", "stems": ["fullstring", "medperc", "choir"], "paceLock": 10 },
+    {
+      "id": "outro",
+      "stems": ["fullstring", "fullorc", "heavyperc"],
+      "isOutro": true,
+      "holdDuration": 19.2,
+      "creditsTransition": {
+        "stemsOn": ["solo", "harp", "lightorc"],
+        "stemsOff": ["fullorc", "heavyperc", "fullstring", "choir", "medperc", "doublebass", "cello", "lightperc"],
+        "finalFadeAfterLoops": 3
+      }
+    }
+  ],
+  "impacts": [
+    { "afterRoom": "scene-1", "id": "impact-1", "duckTo": 0.4, "duckIn": 1.8, "duckOut": 2.2 },
+    { "afterRoom": "scene-3", "id": "impact-2", "duckTo": 0.4, "duckIn": 1.8, "duckOut": 2.2 }
+  ],
+  "stingers": []
+}

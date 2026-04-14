@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ancient Wanderer — Jack Larkin</title>
+<link rel="icon" href="https://jacklarkincomposer.co.uk/assets/images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="scroll-locked">
+
+<!-- Intro modal — single entry point, triggers audio -->
+<div id="intro-modal" class="pre-show">
+  <div class="intro-box">
+    <p class="intro-eyebrow">An Audiovisual Experience</p>
+    <h2 class="intro-title">The Ancient Wanderer</h2>
+    <p class="intro-body">A journey through a fictional ancient world, told entirely through music. As you scroll, new layers of the composition enter — strings, percussion, choir — building and dissolving with the landscape.</p>
+    <div class="intro-hints">
+      <div class="intro-hint"><span class="icon">↕</span> Scroll to move through the world</div>
+      <div class="intro-hint"><span class="icon">⏳</span> Each section asks you to pause and listen</div>
+      <div class="intro-hint"><span class="icon">♪</span> Use headphones for the full experience</div>
+    </div>
+    <button class="intro-enter" id="intro-btn" aria-label="Enter the experience and begin audio playback">Enter the World</button>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar" id="loading-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Scroll arrow -->
+<div id="scroll-arrow">
+  <span class="arrow-label">Continue</span>
+  <div class="arrow-chevron"></div>
+</div>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<div id="progress-bar"></div>
+<div id="fetch-bar-wrap"><div id="fetch-bar"></div></div>
+<div id="notification"></div>
+<div id="pace-lock"></div>
+<div id="pace-warning">Scrolling too fast</div>
+<div id="visualiser"></div>
+
+<!-- Controls -->
+<div id="controls">
+  <div class="stem-indicators"></div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="as-btn" aria-pressed="false">Auto Scroll</button>
+    <button class="ctrl-btn" id="mute-btn" aria-label="Toggle mute" aria-pressed="false">♪</button>
+  </div>
+  <div id="volume-wrap">
+    <label for="vol">Vol</label>
+    <input type="range" id="vol" min="0" max="1" step="0.01" value="0.8" aria-label="Master volume">
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <svg class="ruins-svg" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <path d="M0,200 L0,160 L40,160 L40,120 L60,120 L60,80 L80,80 L80,60 L100,60 L100,80 L120,80 L120,120 L140,120 L140,160 L180,160 L180,140 L200,140 L200,100 L220,100 L220,60 L240,60 L240,40 L260,40 L260,60 L280,60 L280,100 L300,100 L300,140 L340,140 L340,160 L400,160 L400,130 L420,130 L420,90 L440,70 L460,90 L460,130 L480,130 L480,160 L560,160 L560,140 L580,140 L580,100 L600,80 L620,80 L620,50 L640,50 L640,30 L660,30 L660,50 L680,50 L680,80 L700,80 L700,100 L720,100 L720,140 L740,140 L740,160 L800,160 L800,120 L820,120 L820,80 L840,80 L840,60 L860,40 L880,60 L880,80 L900,80 L900,120 L920,120 L920,160 L980,160 L980,140 L1000,140 L1000,100 L1020,70 L1040,100 L1040,140 L1060,140 L1060,160 L1120,160 L1120,130 L1140,130 L1140,90 L1160,90 L1160,60 L1180,60 L1180,40 L1200,40 L1200,60 L1220,60 L1220,90 L1240,90 L1240,130 L1260,130 L1260,160 L1320,160 L1320,140 L1340,140 L1340,120 L1360,120 L1360,160 L1400,160 L1440,160 L1440,200 Z" fill="rgba(201,168,76,0.08)"/>
+    <circle cx="300" cy="40" r="1" fill="rgba(201,168,76,0.6)"/>
+    <circle cx="750" cy="20" r="1.5" fill="rgba(201,168,76,0.8)"/>
+    <circle cx="1100" cy="30" r="1" fill="rgba(201,168,76,0.5)"/>
+    <circle cx="500" cy="15" r="1" fill="rgba(201,168,76,0.4)"/>
+    <circle cx="900" cy="10" r="2" fill="rgba(201,168,76,0.6)"/>
+  </svg>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+    <p class="hero-eyebrow">An Original Composition — Jack Larkin</p>
+    <h1 class="hero-title">The Ancient<em>Wanderer</em></h1>
+    <p class="hero-sub">An unnamed traveller. A world without edges.<br>A silence that remembers.</p>
+    <div class="hero-rule"><div class="rl"></div><span>✦ ✦ ✦</span><div class="rl r"></div></div>
+  </div>
+</section>
+
+<!-- SCENE 1 -->
+<div class="scene" id="scene-1">
+  <div class="scene-frame">
+    <img src="https://cdn.jacklarkincomposer.co.uk/Images%201/The%20summit.png" alt="The Summit" loading="lazy">
+  </div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Sparse · Lost · Searching</p>
+      <h2 class="scene-title">The Summit at the Edge of Memory</h2>
+      <p class="traveller-line">"I did not choose this road — it found me at the edge of everything."</p>
+      <p class="scene-text">The music begins with almost nothing — a solo string against silence, a harp answering. The world is vast. The traveller is small. This is where we start: stripped back, uncertain, looking out at a landscape that has no name.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Solo String</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Harp</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMPACT 1 -->
+<div class="impact" id="impact-1">
+  <div class="impact-rule"></div>
+  <p class="impact-text">A world <em>remembered</em> before it was ever known.</p>
+</div>
+
+<!-- SCENE 2 -->
+<div class="scene" id="scene-2">
+  <div class="scene-frame">
+    <img src="https://cdn.jacklarkincomposer.co.uk/Images%201/the%20valley.png" alt="The Valley" loading="lazy">
+  </div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Ancient · Warm · Melancholic</p>
+      <h2 class="scene-title">The Valley of Forgotten Names</h2>
+      <p class="traveller-line">"The stones here were shaped by hands that are gone. I can still feel the warmth of them."</p>
+      <p class="scene-text">Rhythmic percussion enters beneath the strings — steady, ancient. The melody shifts from searching to recognition. The harp continues. Someone was here before. The music carries the shape of lives that no longer exist to claim it.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Solo String</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Harp</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Perc</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 3 -->
+<div class="scene" id="scene-3">
+  <div class="scene-frame">
+    <img src="https://cdn.jacklarkincomposer.co.uk/Images%201/the%20world.png" alt="The World Revealed" loading="lazy">
+  </div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Epic · Triumphant · Ancient</p>
+      <h2 class="scene-title">The World Revealed</h2>
+      <p class="traveller-line">"And then — all at once — the world opened. And it was more than I could hold."</p>
+      <p class="scene-text">The full orchestration arrives. Cello and low strings give the music weight and earth. A light orchestra swells around the melody. This is the heart of the composition — the moment everything that came before resolves into something larger than itself.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Solo String</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Harp</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Perc</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Cello</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Orc</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMPACT 2 -->
+<div class="impact" id="impact-2">
+  <div class="impact-rule"></div>
+  <p class="impact-text">Every silence was simply <em>the world</em> gathering its breath.</p>
+</div>
+
+<!-- SCENE 4 -->
+<div class="scene" id="scene-4">
+  <div class="scene-frame">
+    <img src="https://cdn.jacklarkincomposer.co.uk/Images%201/Where%20are%20the%20sea%20holds%20It%27s%20dead.png" alt="Where the Sea Holds Its Dead" loading="lazy">
+  </div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Dark · Reverent · Still</p>
+      <h2 class="scene-title">Where the Sea Holds Its Dead</h2>
+      <p class="traveller-line">"To stand here is to understand that beauty and ruin are the same thing."</p>
+      <p class="scene-text">Double bass and choir enter — grounding the sacred in something earthen and inevitable. The harp and light percussion fall away. The solo string continues, quieter now. This is not sadness — it is completion. What stands here has already become something else.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Solo String</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Cello</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 5 -->
+<div class="scene" id="scene-5">
+  <div class="scene-frame">
+    <img src="https://cdn.jacklarkincomposer.co.uk/Images%201/road%20leats%20to%20itseld.png" alt="The Road That Leads to Itself" loading="lazy">
+  </div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Resolved · Distant · Eternal</p>
+      <h2 class="scene-title">The Road That Leads to Itself</h2>
+      <p class="traveller-line">"I recognised the summit from below. I had been here before. I always had been."</p>
+      <p class="scene-text">The full strings return — broader, knowing. Medium percussion drives the music forward into something that feels both like an ending and a beginning. The original melody surfaces one last time, transformed by everything that followed it.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Med Perc</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OUTRO -->
+<section id="outro">
+  <h2 class="outro-title">The Ancient Wanderer<br><em style="font-style:italic;font-weight:400;font-size:0.5em;letter-spacing:0.15em;color:var(--gold);display:block;margin-top:0.3em;">Original Composition</em></h2>
+  <p class="outro-sub">Composed by Jack Larkin</p>
+  <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;margin-top:0.5rem;opacity:0.5;" id="outro-stems">
+    <div class="sc-row" style="width:220px;"><span class="sc-lbl" style="width:80px;">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:90%"></div></div><div class="sc-pip"></div></div>
+    <div class="sc-row" style="width:220px;"><span class="sc-lbl" style="width:80px;">Full Orc</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+    <div class="sc-row" style="width:220px;"><span class="sc-lbl" style="width:80px;">Heavy Perc</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+  </div>
+</section>
+
+<!-- CREDITS -->
+<section id="credits">
+  <p class="credits-hl">Thank you for listening</p>
+  <p class="credits-body">
+    Final Year Composition for Screen<br>
+    University of Huddersfield · 2025<br>
+    Logic Pro · East West Composer Cloud<br><br>
+    <em>All worlds, motifs, and journeys fictional.</em>
+  </p>
+</section>
+
+<footer id="site-footer">
+  <span class="footer-divider">✦</span>
+  <a class="footer-name" href="https://jacklarkincomposer.co.uk" target="_blank" rel="noopener">Jack Larkin</a>
+  <nav class="footer-links" aria-label="Social links">
+    <a href="https://www.youtube.com/@Jacklarkincomposer" target="_blank" rel="noopener">YouTube</a>
+    <a href="https://soundcloud.com/jacklarkincomposer" target="_blank" rel="noopener">SoundCloud</a>
+    <a href="https://www.instagram.com/jacklarkincomposer/" target="_blank" rel="noopener">Instagram</a>
+    <a href="mailto:jacklarkincomposer@gmail.com">Email</a>
+  </nav>
+  <p class="footer-copy">© Jack Larkin 2025</p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
