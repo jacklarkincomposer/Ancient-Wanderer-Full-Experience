@@ -17,6 +17,9 @@ export function createAudioEngine(config) {
   const pendingFades = new Map();
   const stemLoadedCallbacks = [];
   const lastInstance = {}; // id → { source, instGain } — tracks the most recent BufferSource per stem for tail crossfade
+  const introStemIds = new Set(); // stem IDs that serve as intro variants (referenced by another stem's .intro field)
+  stemDefs.forEach(s => { if (s.intro) introStemIds.add(s.intro); });
+  const playedIntros = new Set(); // loop stem IDs whose one-shot intro has already fired this page session
 
   const prefetchedBuffers = {}; // id → ArrayBuffer (raw, not decoded)
 
@@ -61,31 +64,44 @@ export function createAudioEngine(config) {
   }
 
   async function loadStems(ids, onProgress) {
-    const toLoad = ids.filter(id => !loadedStems.has(id) && !loadingStems.has(id));
+    // Auto-include intro variants alongside their loop partners
+    const expanded = [...new Set(ids.flatMap(id => {
+      const def = stemMap[id];
+      return def && def.intro ? [id, def.intro] : [id];
+    }))];
+    const toLoad = expanded.filter(id => !loadedStems.has(id) && !loadingStems.has(id) && !buf[id]);
     toLoad.forEach(id => loadingStems.add(id));
 
     await Promise.all(toLoad.map(async id => {
       buf[id] = await fetchStem(id, 1);
       loadingStems.delete(id);
       if (buf[id]) {
-        loadedStems.add(id);
-        // Create gain node if not already wired
-        if (!gain[id]) {
-          const g = actx.createGain();
-          g.gain.value = 0;
-          g.connect(mg);
-          gain[id] = g;
-        }
-        scheduleImmediately(id);
-        // Check pending fades
-        if (pendingFades.has(id)) {
-          const roomIdx = pendingFades.get(id);
-          pendingFades.delete(id);
-          if (roomIdx === currentRoomIndex) {
-            fadeIn(id);
+        if (introStemIds.has(id)) {
+          // Intro stems: buffer stored for one-shot playback, never enter the loop scheduler
+          stemLoadedCallbacks.forEach(cb => cb(id));
+        } else {
+          loadedStems.add(id);
+          // Create gain node if not already wired
+          if (!gain[id]) {
+            const g = actx.createGain();
+            g.gain.value = 0;
+            g.connect(mg);
+            gain[id] = g;
           }
+          // Skip scheduleImmediately if an intro is currently mid-play — scheduler picks it up at schedNext
+          if (!(playedIntros.has(id) && lastInstance[id])) {
+            scheduleImmediately(id);
+          }
+          // Check pending fades
+          if (pendingFades.has(id)) {
+            const roomIdx = pendingFades.get(id);
+            pendingFades.delete(id);
+            if (roomIdx === currentRoomIndex) {
+              fadeIn(id);
+            }
+          }
+          stemLoadedCallbacks.forEach(cb => cb(id));
         }
-        stemLoadedCallbacks.forEach(cb => cb(id));
       }
       if (onProgress) onProgress(id);
     }));
@@ -183,6 +199,36 @@ export function createAudioEngine(config) {
   function fadeIn(id, duration) {
     if (activeStems.has(id)) return;
     activeStems.add(id);
+
+    // Play intro variant once on first entry, routed through the loop stem's gain node.
+    // Registers as lastInstance[id] so the crossfade system bridges intro → loop at schedNext.
+    const def = stemMap[id];
+    if (def && def.intro && !playedIntros.has(id) && buf[def.intro]) {
+      playedIntros.add(id);
+      if (!gain[id]) {
+        const g = actx.createGain();
+        g.gain.value = 0;
+        g.connect(mg);
+        gain[id] = g;
+      }
+      const src = actx.createBufferSource();
+      src.buffer = buf[def.intro];
+      const instGain = actx.createGain();
+      instGain.gain.value = 1;
+      src.connect(instGain);
+      instGain.connect(gain[id]);
+      src.start(actx.currentTime + 0.05);
+      activeSrc.push(src);
+      const introInst = { source: src, instGain };
+      lastInstance[id] = introInst;
+      src.onended = () => {
+        const i = activeSrc.indexOf(src);
+        if (i > -1) activeSrc.splice(i, 1);
+        try { instGain.disconnect(); } catch (e) {}
+        if (lastInstance[id] === introInst) lastInstance[id] = null;
+      };
+    }
+
     const g = gain[id];
     if (!g) {
       // Not loaded yet — queue for later
@@ -325,7 +371,12 @@ export function createAudioEngine(config) {
 
   // ── Prefetch / decode (background load before AudioContext) ──
   async function prefetchStems(ids, onProgress) {
-    const toFetch = ids.filter(id => !prefetchedBuffers[id] && !loadedStems.has(id));
+    // Auto-include intro variants so they prefetch alongside their loop partners
+    const expanded = [...new Set(ids.flatMap(id => {
+      const def = stemMap[id];
+      return def && def.intro ? [id, def.intro] : [id];
+    }))];
+    const toFetch = expanded.filter(id => !prefetchedBuffers[id] && !loadedStems.has(id) && !buf[id]);
     await Promise.all(toFetch.map(async id => {
       const def = stemMap[id];
       if (!def) return;
@@ -341,12 +392,22 @@ export function createAudioEngine(config) {
   }
 
   async function decodePreFetched(ids) {
-    await Promise.all(ids.map(async id => {
-      if (!prefetchedBuffers[id] || loadedStems.has(id)) return;
+    // Auto-include intro variants alongside their loop partners
+    const expanded = [...new Set(ids.flatMap(id => {
+      const def = stemMap[id];
+      return def && def.intro ? [id, def.intro] : [id];
+    }))];
+    await Promise.all(expanded.map(async id => {
+      if (!prefetchedBuffers[id] || loadedStems.has(id) || buf[id]) return;
       try {
         buf[id] = await actx.decodeAudioData(prefetchedBuffers[id]);
         delete prefetchedBuffers[id];
         if (buf[id]) {
+          if (introStemIds.has(id)) {
+            // Intro stem: buffer ready for one-shot use, not added to loop scheduler
+            stemLoadedCallbacks.forEach(cb => cb(id));
+            return;
+          }
           loadedStems.add(id);
           if (!gain[id]) {
             const g = actx.createGain();

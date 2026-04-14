@@ -22,14 +22,21 @@
     "scheduleInterval": 200
   },
   "stems": [
-    {
-      "id": "harp",
-      "file": "Ch1/S01_Harp_01.mp3",
-      "label": "Harp",
-      "group": "strings",
-      "tailFade": 3
-    }
-  ],
+  {
+    "id": "harp",
+    "file": "Ch1/orchestra.mp3",
+    "label": "Harp",
+    "group": "strings",
+    "tailFade": 3,
+    "intro": "harp_intro"
+  },
+  {
+    "id": "harp_intro",
+    "file": "Ch1/Intro_orchestra.mp3",
+    "label": "Harp Intro",
+    "group": "strings"
+  }
+],
   "rooms": [
     { "id": "scene-1", "stems": ["harp"], "paceLock": 10 }
   ],
