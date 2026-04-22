@@ -3,14 +3,43 @@
 export function initUI(config, engine) {
   // ── Custom cursor ──
   const cur = document.getElementById('cursor');
-  const ring = document.getElementById('cursor-ring');
   if (!window.matchMedia('(hover: none)').matches) {
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cur.style.left = mx + 'px'; cur.style.top = my + 'px'; });
-    (function tick() { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; requestAnimationFrame(tick); })();
+    let mx = 0, my = 0, lastTrail = 0;
+
+    function spawnTrail(x, y) {
+      const t = document.createElement('div');
+      t.className = 'cursor-trail';
+      t.style.left = x + 'px';
+      t.style.top = y + 'px';
+      document.body.appendChild(t);
+      requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('fade')));
+      setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 550);
+    }
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+      const now = Date.now();
+      if (now - lastTrail > 50) { spawnTrail(mx, my); lastTrail = now; }
+    });
+
+    document.addEventListener('mousedown', e => {
+      const c = document.createElement('div');
+      c.className = 'cursor-click';
+      c.style.left = e.clientX + 'px';
+      c.style.top = e.clientY + 'px';
+      document.body.appendChild(c);
+      requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('pop')));
+      setTimeout(() => { if (c.parentNode) c.parentNode.removeChild(c); }, 450);
+    });
+
     document.querySelectorAll('button,.begin-btn,.intro-enter').forEach(el => {
-      el.addEventListener('mouseenter', () => { ring.style.width = '48px'; ring.style.height = '48px'; ring.style.borderColor = 'var(--gold)'; });
-      el.addEventListener('mouseleave', () => { ring.style.width = '34px'; ring.style.height = '34px'; ring.style.borderColor = 'rgba(201,168,76,0.4)'; });
+      el.addEventListener('mouseenter', () => {
+        cur.style.filter = 'drop-shadow(0 0 10px rgba(201,168,76,1)) drop-shadow(0 0 22px rgba(201,168,76,0.5))';
+      });
+      el.addEventListener('mouseleave', () => {
+        cur.style.filter = '';
+      });
     });
   }
 
