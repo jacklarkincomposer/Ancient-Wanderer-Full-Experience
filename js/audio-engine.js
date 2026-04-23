@@ -363,6 +363,7 @@ export function createAudioEngine(config) {
 
   function setRoom(idx) {
     if (idx === currentRoomIndex || idx < 0) return null;
+    const prevRoom = config.rooms[currentRoomIndex];
     const room = config.rooms[idx];
     const target = new Set([...room.stems, ...(room.drones || [])]);
     const allStemIds = stemDefs.map(s => s.id);
@@ -376,6 +377,13 @@ export function createAudioEngine(config) {
       currentLoopDuration = room.loop.duration;
     } else {
       currentLoopDuration = audio.defaultLoop.duration;
+    }
+
+    // Re-anchor the scheduler to beat 1 when entering a loop room from a drone-only room.
+    // Without this, scheduleImmediately calculates a stale loop offset and starts stems mid-phrase.
+    const prevWasDroneOnly = prevRoom && prevRoom.stems && prevRoom.stems.length === 0;
+    if (prevWasDroneOnly && room.stems && room.stems.length > 0) {
+      schedNext = actx.currentTime + currentLoopDuration;
     }
 
     // Fade in stems in target
