@@ -392,6 +392,15 @@ export function createAudioEngine(config) {
         entering.push(id);
         if (loadedStems.has(id)) {
           fadeIn(id);
+          // For regular loop stems, ensure a source is live immediately.
+          // fadeIn() only ramps the gain — it doesn't create a new source. The scheduler's
+          // existing instance may have already ended (file shorter than prior loop interval),
+          // so kick off a new one aligned to the current schedule grid.
+          const def = stemMap[id];
+          const hasUnplayedIntro = def && def.intro && !playedIntros.has(id);
+          if (!droneIds.has(id) && !hasUnplayedIntro) {
+            scheduleImmediately(id);
+          }
         } else {
           // Mark as pending — will fade in when loaded
           activeStems.add(id);

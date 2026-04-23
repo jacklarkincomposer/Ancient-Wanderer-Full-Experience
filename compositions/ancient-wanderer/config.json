@@ -10,7 +10,7 @@
   "audio": {
     "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Ch1/",
     "defaultLoop": {
-      "duration": 27.989,
+      "duration": 27.5,
       "bars": 8,
       "bpm": 85,
       "timeSignature": [3, 4]
@@ -23,56 +23,56 @@
     "scheduleInterval": 200
   },
   "stems": [
-    { "id": "l1_harp",             "file": "l1_Harp.mp3",                                      "label": "Harp",                            "group": "strings",    "tailFade": 2 },
-    { "id": "l1_furaja",           "file": "l1_Furaja.mp3",                                    "label": "Fujara",                          "group": "winds",      "tailFade": 1 },
-    { "id": "l1_1st_violins",      "file": "l1_1st_Violins.mp3",                               "label": "1st Violins",                     "group": "strings",    "tailFade": 1 },
-    { "id": "l1_2nd_violins_pizz", "file": "l1_2_violin_Pizz.mp3",                             "label": "2nd Violins Pizz",                "group": "strings",    "tailFade": 1 },
-    { "id": "l1_taikos",           "file": "l1_Taikos.mp3",                                    "label": "Taiko",                           "group": "percussion", "tailFade": 2 },
+    { "id": "l1_harp",             "file": "l1_Harp.mp3",                                      "label": "Harp",                            "group": "strings",    "tailFade": 3 },
+    { "id": "l1_furaja",           "file": "l1_Furaja.mp3",                                    "label": "Fujara",                          "group": "winds",      "tailFade": 1.5 },
+    { "id": "l1_1st_violins",      "file": "l1_1st_Violins.mp3",                               "label": "1st Violins",                     "group": "strings",    "tailFade": 1.5 },
+    { "id": "l1_2nd_violins_pizz", "file": "l1_2_violin_Pizz.mp3",                             "label": "2nd Violins Pizz",                "group": "strings",    "tailFade": 1.5 },
+    { "id": "l1_taikos",           "file": "l1_Taikos.mp3",                                    "label": "Taiko",                           "group": "percussion", "tailFade": 3 },
 
-    { "id": "l2_1st_violins",         "file": "l2_1st_Violins_1.mp3",            "label": "1st Violins",                 "group": "strings",    "tailFade": 1 },
+    { "id": "l2_1st_violins",         "file": "l2_1st_Violins_1.mp3",            "label": "1st Violins",                 "group": "strings",    "tailFade": 1.5 },
     { "id": "l2_2nd_violins_pizz",    "file": "l2_2_violin_Pizz.mp3",            "label": "2nd Violins Pizz",            "group": "strings",    "tailFade": 2 },
-    { "id": "l2_dulcimer_lutes_harp", "file": "l2_Dulclimer_Lutes_Harp.mp3",    "label": "Dulcimer, Lutes, Harp",       "group": "strings",    "tailFade": 3 },
-    { "id": "l2_furaja_ren_flutes",   "file": "l2_Furaja_Renaisence_Flutes.mp3","label": "Fujara + Renaissance Flutes", "group": "winds",      "tailFade": 2 },
-    { "id": "l2_low_string",          "file": "l2_Low_string.mp3",              "label": "Low Strings",                 "group": "strings",    "tailFade": 3 },
-    { "id": "l2_solo_oo",             "file": "l2_Solo_Oo.mp3",                 "label": "Solo Voice Oo",               "group": "vocals",     "tailFade": 1 },
-    { "id": "l2_taikos",              "file": "l2_Taikos.mp3",                  "label": "Taiko",                       "group": "percussion", "tailFade": 2 },
+    { "id": "l2_dulcimer_lutes_harp", "file": "l2_Dulclimer_Lutes_Harp.mp3",    "label": "Dulcimer, Lutes, Harp",       "group": "strings",    "tailFade": 3.5 },
+    { "id": "l2_furaja_ren_flutes",   "file": "l2_Furaja_Renaisence_Flutes.mp3","label": "Fujara + Renaissance Flutes", "group": "winds",      "tailFade": 3 },
+    { "id": "l2_low_string",          "file": "l2_Low_string.mp3",              "label": "Low Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l2_solo_oo",             "file": "l2_Solo_Oo.mp3",                 "label": "Solo Voice Oo",               "group": "vocals",     "tailFade": 1.5 },
+    { "id": "l2_taikos",              "file": "l2_Taikos.mp3",                  "label": "Taiko",                       "group": "percussion", "tailFade": 3 },
 
     { "id": "l3_drone", "file": "l3_Drone_1.mp3", "label": "Drone", "group": "atmosphere", "type": "drone", "tailFade": 5 },
 
-    { "id": "l4_harp_dulcimer_lutes", "file": "l4_Harp_Dulclimer_Lutes_2.mp3", "label": "Harp, Dulcimer, Lutes", "group": "strings",    "tailFade": 1 },
-    { "id": "l4_light_percussion",    "file": "l4_Light_Percussion_3.mp3",     "label": "Light Percussion",       "group": "percussion", "tailFade": 1 },
-    { "id": "l4_ocarinas",            "file": "l4_Ocarinas.mp3",               "label": "Ocarinas",               "group": "winds",      "tailFade": 1 },
-    { "id": "l4_strings",             "file": "l4_Strings_4.mp3",              "label": "Strings",                "group": "strings",    "tailFade": 1 },
+    { "id": "l4_harp_dulcimer_lutes", "file": "l4_Harp_Dulclimer_Lutes_2.mp3", "label": "Harp, Dulcimer, Lutes", "group": "strings",    "tailFade": 2 },
+    { "id": "l4_light_percussion",    "file": "l4_Light_Percussion_3.mp3",     "label": "Light Percussion",       "group": "percussion", "tailFade": 1.5 },
+    { "id": "l4_ocarinas",            "file": "l4_Ocarinas.mp3",               "label": "Ocarinas",               "group": "winds",      "tailFade": 1.5 },
+    { "id": "l4_strings",             "file": "l4_Strings_4.mp3",              "label": "Strings",                "group": "strings",    "tailFade": 1.5 },
 
-    { "id": "l5_harp_dulcimer_lutes", "file": "l5_Harp_Dulclimer_Lutes_1.mp3",          "label": "Harp, Dulcimer, Lutes",              "group": "strings",    "tailFade": 1 },
-    { "id": "l5_irish_whistle_ren",   "file": "l5_Irish_whistle_Renaisance_Flutes.mp3", "label": "Irish Whistle + Renaissance Flutes", "group": "winds",      "tailFade": 1 },
-    { "id": "l5_light_percussion",    "file": "l5_Light_Percussion.mp3",                "label": "Light Percussion",                   "group": "percussion", "tailFade": 1 },
-    { "id": "l5_solo_oo",             "file": "l5_Solo_Oo.mp3",                         "label": "Solo Voice Oo",                      "group": "vocals",     "tailFade": 1 },
-    { "id": "l5_strings",             "file": "l5_Strings.mp3",                         "label": "Strings",                            "group": "strings",    "tailFade": 1 },
-    { "id": "l5_uilleann_pipes",      "file": "l5_Uliean_Pipes.mp3",                    "label": "Uilleann Pipes",                     "group": "winds",      "tailFade": 1 },
+    { "id": "l5_harp_dulcimer_lutes", "file": "l5_Harp_Dulclimer_Lutes_1.mp3",          "label": "Harp, Dulcimer, Lutes",              "group": "strings",    "tailFade": 2 },
+    { "id": "l5_irish_whistle_ren",   "file": "l5_Irish_whistle_Renaisance_Flutes.mp3", "label": "Irish Whistle + Renaissance Flutes", "group": "winds",      "tailFade": 1.5 },
+    { "id": "l5_light_percussion",    "file": "l5_Light_Percussion.mp3",                "label": "Light Percussion",                   "group": "percussion", "tailFade": 1.5 },
+    { "id": "l5_solo_oo",             "file": "l5_Solo_Oo.mp3",                         "label": "Solo Voice Oo",                      "group": "vocals",     "tailFade": 1.5 },
+    { "id": "l5_strings",             "file": "l5_Strings.mp3",                         "label": "Strings",                            "group": "strings",    "tailFade": 1.5 },
+    { "id": "l5_uilleann_pipes",      "file": "l5_Uliean_Pipes.mp3",                    "label": "Uilleann Pipes",                     "group": "winds",      "tailFade": 2 },
 
     { "id": "l6_drone", "file": "l6_Drone_2.mp3", "label": "Drone", "group": "atmosphere", "type": "drone", "tailFade": 5 },
 
-    { "id": "l7_braam_hits",    "file": "l7_Braam_Hits.mp3",        "label": "Braam Hits",            "group": "percussion", "tailFade": 1 },
-    { "id": "l7_choir",         "file": "l7_Choir_1.mp3",           "label": "Choir",                 "group": "vocals",     "tailFade": 1 },
-    { "id": "l7_female_shouts", "file": "l7_Female_Shouts.mp3",     "label": "Female Shouts",         "group": "vocals",     "tailFade": 1 },
-    { "id": "l7_full_orchestra","file": "l7_Full_Orchestra.mp3",    "label": "Full Orchestra",        "group": "orchestra",  "tailFade": 1 },
-    { "id": "l7_heavy_perc",    "file": "l7_Heavy_Percussion.mp3",  "label": "Heavy Percussion",      "group": "percussion", "tailFade": 1 },
-    { "id": "l7_light_perc",    "file": "l7_Light_Percussion_1.mp3","label": "Light Percussion",      "group": "percussion", "tailFade": 1 },
-    { "id": "l7_low_brass_stac","file": "l7_Low_Brass_Stac.mp3",   "label": "Low Brass (Staccato)",  "group": "brass",      "tailFade": 1 },
-    { "id": "l7_low_brass_sus", "file": "l7_Low_Brass_Sus.mp3",    "label": "Low Brass (Sustained)", "group": "brass",      "tailFade": 1 },
-    { "id": "l7_low_sus",       "file": "l7_Low_Sus.mp3",           "label": "Low Strings",           "group": "strings",    "tailFade": 1 },
-    { "id": "l7_psycho_trem",   "file": "l7_Psycho_Trem.mp3",       "label": "Viola da Gamba (Trem)", "group": "strings",    "tailFade": 1 },
-    { "id": "l7_strings",       "file": "l7_Strings_5.mp3",         "label": "Strings",               "group": "strings",    "tailFade": 1 },
-    { "id": "l7_uilleann_pipes","file": "l7_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",        "group": "winds",      "tailFade": 1 },
-    { "id": "l7_war_horn",      "file": "l7_War_horn.mp3",          "label": "War Horn",              "group": "brass",      "tailFade": 1 },
+    { "id": "l7_braam_hits",    "file": "l7_Braam_Hits.mp3",        "label": "Braam Hits",            "group": "percussion", "tailFade": 1.5 },
+    { "id": "l7_choir",         "file": "l7_Choir_1.mp3",           "label": "Choir",                 "group": "vocals",     "tailFade": 1.5 },
+    { "id": "l7_female_shouts", "file": "l7_Female_Shouts.mp3",     "label": "Female Shouts",         "group": "vocals",     "tailFade": 1.5 },
+    { "id": "l7_full_orchestra","file": "l7_Full_Orchestra.mp3",    "label": "Full Orchestra",        "group": "orchestra",  "tailFade": 2 },
+    { "id": "l7_heavy_perc",    "file": "l7_Heavy_Percussion.mp3",  "label": "Heavy Percussion",      "group": "percussion", "tailFade": 1.5 },
+    { "id": "l7_light_perc",    "file": "l7_Light_Percussion_1.mp3","label": "Light Percussion",      "group": "percussion", "tailFade": 1.5 },
+    { "id": "l7_low_brass_stac","file": "l7_Low_Brass_Stac.mp3",   "label": "Low Brass (Staccato)",  "group": "brass",      "tailFade": 1.5 },
+    { "id": "l7_low_brass_sus", "file": "l7_Low_Brass_Sus.mp3",    "label": "Low Brass (Sustained)", "group": "brass",      "tailFade": 1.5 },
+    { "id": "l7_low_sus",       "file": "l7_Low_Sus.mp3",           "label": "Low Strings",           "group": "strings",    "tailFade": 2 },
+    { "id": "l7_psycho_trem",   "file": "l7_Psycho_Trem.mp3",       "label": "Viola da Gamba (Trem)", "group": "strings",    "tailFade": 2 },
+    { "id": "l7_strings",       "file": "l7_Strings_5.mp3",         "label": "Strings",               "group": "strings",    "tailFade": 1.5 },
+    { "id": "l7_uilleann_pipes","file": "l7_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",        "group": "winds",      "tailFade": 2 },
+    { "id": "l7_war_horn",      "file": "l7_War_horn.mp3",          "label": "War Horn",              "group": "brass",      "tailFade": 1.5 },
 
-    { "id": "l8_choir",           "file": "l8_Choir_6.mp3",                                 "label": "Choir",                            "group": "vocals",     "tailFade": 1 },
-    { "id": "l8_hits",            "file": "l8_Hits.mp3",                                    "label": "Hits",                             "group": "percussion", "tailFade": 2 },
-    { "id": "l8_light_orchestra", "file": "l8_Light_Orchestra.mp3",                         "label": "Light Orchestra",                  "group": "orchestra",  "tailFade": 4 },
-    { "id": "l8_low_brass",       "file": "l8_Low_Brass_1.mp3",                             "label": "Low Brass",                        "group": "brass",      "tailFade": 1 },
-    { "id": "l8_uilleann_flutes", "file": "l8_Ulien_Pipes_Shepard_Pipe_Flute_flutters.mp3","label": "Uilleann + Shepard + Flutter Flutes","group": "winds",     "tailFade": 1 },
-    { "id": "l8_war_horn",        "file": "l8_War_horn.mp3",                                "label": "War Horn",                         "group": "brass",      "tailFade": 1 },
+    { "id": "l8_choir",           "file": "l8_Choir_6.mp3",                                 "label": "Choir",                            "group": "vocals",     "tailFade": 1.5 },
+    { "id": "l8_hits",            "file": "l8_Hits.mp3",                                    "label": "Hits",                             "group": "percussion", "tailFade": 2.5 },
+    { "id": "l8_light_orchestra", "file": "l8_Light_Orchestra.mp3",                         "label": "Light Orchestra",                  "group": "orchestra",  "tailFade": 5 },
+    { "id": "l8_low_brass",       "file": "l8_Low_Brass_1.mp3",                             "label": "Low Brass",                        "group": "brass",      "tailFade": 1.5 },
+    { "id": "l8_uilleann_flutes", "file": "l8_Ulien_Pipes_Shepard_Pipe_Flute_flutters.mp3","label": "Uilleann + Shepard + Flutter Flutes","group": "winds",     "tailFade": 1.5 },
+    { "id": "l8_war_horn",        "file": "l8_War_horn.mp3",                                "label": "War Horn",                         "group": "brass",      "tailFade": 1.5 },
 
     { "id": "l9_oneshot", "file": "l9_One_Shot_Orchestra.mp3", "label": "One-Shot Orchestra", "group": "orchestra" },
 
@@ -80,25 +80,25 @@
     { "id": "l10_strings",        "file": "l10_Strings_1.mp3",         "label": "Strings",         "group": "strings", "tailFade": 3, "intro": "l9_oneshot" },
 
     { "id": "l11_choir",          "file": "l11_Choirs.mp3",            "label": "Choir",            "group": "vocals",     "tailFade": 3 },
-    { "id": "l11_dulcimer_lutes", "file": "l11_Dulclimer_Lutes_3.mp3", "label": "Dulcimer, Lutes",  "group": "strings",    "tailFade": 1 },
+    { "id": "l11_dulcimer_lutes", "file": "l11_Dulclimer_Lutes_3.mp3", "label": "Dulcimer, Lutes",  "group": "strings",    "tailFade": 1.5 },
     { "id": "l11_female_shouts",  "file": "l11_Female_Shouts_1.mp3",   "label": "Female Shouts",    "group": "vocals",     "tailFade": 2 },
     { "id": "l11_heavy_perc",     "file": "l11_Heavy_Percussion_1.mp3","label": "Heavy Percussion", "group": "percussion", "tailFade": 5 },
     { "id": "l11_low_brass",      "file": "l11_Low_brass_2.mp3",       "label": "Low Brass",        "group": "brass",      "tailFade": 3 },
-    { "id": "l11_strings",        "file": "l11_Strings_2.mp3",         "label": "Strings",          "group": "strings",    "tailFade": 3 },
-    { "id": "l11_uilleann_pipes", "file": "l11_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",   "group": "winds",      "tailFade": 3 }
+    { "id": "l11_strings",        "file": "l11_Strings_2.mp3",         "label": "Strings",          "group": "strings",    "tailFade": 3.5 },
+    { "id": "l11_uilleann_pipes", "file": "l11_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",   "group": "winds",      "tailFade": 3.5 }
   ],
   "rooms": [
     {
       "id": "scene-1",
       "stems": ["l1_harp", "l1_furaja"],
       "paceLock": 10,
-      "loop": { "duration": 27.989, "bars": 8, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.5, "bars": 8, "bpm": 85, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-2",
       "stems": ["l1_harp", "l1_furaja", "l1_1st_violins", "l1_2nd_violins_pizz", "l1_taikos"],
       "paceLock": 10,
-      "loop": { "duration": 27.989, "bars": 8, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.5, "bars": 8, "bpm": 85, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-3",
@@ -107,7 +107,7 @@
         "l2_furaja_ren_flutes", "l2_low_string", "l2_solo_oo", "l2_taikos"
       ],
       "paceLock": 10,
-      "loop": { "duration": 27.989, "bars": 8, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.5, "bars": 8, "bpm": 85, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-4",
@@ -120,7 +120,7 @@
       "id": "scene-5",
       "stems": ["l4_harp_dulcimer_lutes", "l4_light_percussion", "l4_ocarinas", "l4_strings"],
       "paceLock": 10,
-      "loop": { "duration": 21.845, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 21.0, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-6",
@@ -129,7 +129,7 @@
         "l5_light_percussion", "l5_solo_oo", "l5_strings", "l5_uilleann_pipes"
       ],
       "paceLock": 10,
-      "loop": { "duration": 21.845, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 21.0, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-7",
@@ -141,7 +141,7 @@
       "id": "scene-8",
       "stems": ["l7_low_brass_sus", "l7_heavy_perc", "l7_choir", "l7_war_horn", "l7_low_sus", "l7_uilleann_pipes"],
       "paceLock": 10,
-      "loop": { "duration": 21.845, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 21.0, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-9",
@@ -151,13 +151,13 @@
         "l7_low_sus", "l7_psycho_trem", "l7_strings", "l7_uilleann_pipes", "l7_war_horn"
       ],
       "paceLock": 10,
-      "loop": { "duration": 21.845, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 21.0, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-10",
       "stems": ["l8_choir", "l8_hits", "l8_light_orchestra", "l8_low_brass", "l8_uilleann_flutes", "l8_war_horn"],
       "paceLock": 10,
-      "loop": { "duration": 21.845, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 21.0, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-11",
