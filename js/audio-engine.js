@@ -173,6 +173,7 @@ export function createAudioEngine(config) {
   // This lets us fade out the previous instance independently of the incoming one,
   // so reverb tails printed into the buffer decay cleanly instead of doubling with the new loop's attack.
   function createInstance(id, when, offset) {
+    console.log(`[sched] ${id} | scheduled: ${when.toFixed(3)}s | now: ${actx.currentTime.toFixed(3)}s | buf: ${buf[id] ? buf[id].duration.toFixed(3) : '?'}s | offset: ${offset != null ? offset.toFixed(3) : 0}`);
     const src = actx.createBufferSource();
     src.buffer = buf[id];
     const instGain = actx.createGain();
