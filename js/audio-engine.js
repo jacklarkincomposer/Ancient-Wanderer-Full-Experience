@@ -228,6 +228,7 @@ export function createAudioEngine(config) {
     loadedStems.forEach(id => {
       if (!buf[id] || !gain[id]) return;
       if (droneIds.has(id)) return; // drones manage their own looping source
+      if (!activeStems.has(id)) return; // don't schedule inactive (exiting) stems
       // Skip this stem if its intro hasn't finished yet — the lookahead timer handles the first loop instance
       if (pendingIntroEnds.has(id) && when < pendingIntroEnds.get(id)) return;
       createInstance(id, when);
@@ -463,6 +464,8 @@ export function createAudioEngine(config) {
         room.stems.forEach(id => {
           pendingIntroEnds.delete(id);
           if (buf[id] && gain[id] && activeStems.has(id)) {
+            gain[id].gain.cancelScheduledValues(actx.currentTime);
+            gain[id].gain.setValueAtTime(1, loopStartTime);
             createInstance(id, loopStartTime);
           }
         });
@@ -475,8 +478,8 @@ export function createAudioEngine(config) {
       if (!activeStems.has(id)) {
         entering.push(id);
         if (loadedStems.has(id)) {
-          if (droneExitActive && !droneIds.has(id)) {
-            // Drone exit: stem activates silently and waits for the lookahead timer.
+          if ((droneExitActive || roomIntroActive) && !droneIds.has(id)) {
+            // Drone exit / room intro: stem activates silently and waits for the lookahead timer.
             // No fadeIn ramp — gain jumps to 1 at loopStartTime on the audio clock.
             // No scheduleImmediately — the timer's createInstance handles source creation.
             activeStems.add(id);
