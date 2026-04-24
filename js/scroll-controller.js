@@ -204,12 +204,15 @@ export function createScrollController(config, engine, loader, ui) {
               }, fadeDelay);
             }, 2000);
           } else if (config.composition && config.composition.nextChapter) {
-            // No credits — just fade out and hand off to the next chapter
+            // No credits — fade out audio and reveal the chapter button. User navigates manually.
             engine.fadeOutMaster();
-            setTimeout(() => {
-              ui.stopVisualiser();
-              navigateToNextChapter(config);
-            }, config.audio.masterFadeOut * 1000);
+            ui.stopVisualiser();
+            const btn = document.getElementById('chapter-btn');
+            if (btn) {
+              btn.href = config.composition.nextChapter;
+              btn.classList.remove('hidden');
+              btn.classList.add('revealed');
+            }
           }
         }, holdMs);
       }
@@ -272,8 +275,12 @@ export function createScrollController(config, engine, loader, ui) {
       if (outroLock) {
         const outroRoom = rooms.find(r => r.isOutro);
         if (outroRoom) {
-          const o = document.getElementById(outroRoom.id);
-          if (o) window.scrollTo({ top: o.offsetTop, behavior: 'instant' });
+          const oe = document.getElementById(outroRoom.id);
+          const outroIdx = rooms.indexOf(outroRoom);
+          const minScroll = oe ? oe.offsetTop : 0;
+          const maxScroll = getLockBot(outroIdx);
+          if (window.scrollY < minScroll) window.scrollTo({ top: minScroll, behavior: 'instant' });
+          else if (window.scrollY > maxScroll) window.scrollTo({ top: maxScroll, behavior: 'instant' });
         }
         return;
       }
@@ -300,6 +307,15 @@ export function createScrollController(config, engine, loader, ui) {
         engine.resumeContext();
       }
     });
+
+    // Chapter button click — saves volume and navigates
+    const chapterBtn = document.getElementById('chapter-btn');
+    if (chapterBtn) {
+      chapterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToNextChapter(config);
+      });
+    }
 
     // Run initial scroll check
     onScroll();

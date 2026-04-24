@@ -132,17 +132,10 @@ Computes the entering and exiting stem sets, calls `fadeIn` on entering stems an
 
 ### Invariants
 
-- **`fadeIn` + `scheduleImmediately` are both called for entering loop stems.** `fadeIn` only ramps the `gain[id]` — it does not create a `BufferSource`. Without `scheduleImmediately`, the stem fades in but is silent until the next scheduler generation (up to `currentLoopDuration` later).
-- **`scheduleImmediately` is skipped for stems with an unplayed intro** (`hasUnplayedIntro`). The intro path handles source creation. Calling `scheduleImmediately` on top of that creates a duplicate source mid-intro.
+- **`fadeIn` + `scheduleImmediately` are both called for entering loop stems** — unless the stem is entering via a drone exit or room intro, in which case both are suppressed and the lookahead timer handles source creation.
+- **`scheduleImmediately` is skipped for stems with an unplayed intro** (`hasUnplayedIntro`), a room intro active (`roomIntroActive`), or a drone exit active (`droneExitActive`).
 - **Drones are skipped in `scheduleImmediately`** — their source is created inside `fadeIn` for drones.
-- **Drone-only → loop room transition re-anchors `schedNext`.**
-  ```js
-  const prevWasDroneOnly = prevRoom && prevRoom.stems && prevRoom.stems.length === 0;
-  if (prevWasDroneOnly && room.stems.length > 0) {
-    schedNext = actx.currentTime + currentLoopDuration;
-  }
-  ```
-  Without this, `scheduleImmediately` calculates a stale `loopStart` (from before the drone-only room) and starts stems mid-phrase.
+- **Drone-only → loop room: see section 5b.** The old simple `schedNext` re-anchor has been replaced with the full drone-exit mechanism.
 - **`currentLoopDuration` is updated before any stem scheduling** in `setRoom`. Room-specific `loop.duration` takes precedence over `audio.defaultLoop.duration`.
 - **Pending stems** (not yet loaded when `setRoom` is called) are added to `activeStems` and `pendingFades`. When they finish loading, `loadStems` calls `activeStems.delete(id)` then `fadeIn(id)` — this undo is needed because `fadeIn` has an early-return guard on `activeStems.has(id)`.
 
@@ -170,17 +163,37 @@ On room entry, `startLock(idx)` records the room's `paceLock` duration, clamps `
 
 ---
 
-## 8. Outro Gate (`scroll-controller.js`)
+---
+
+## 5b. Drone-to-Loop Transition (`audio-engine.js → setRoom`)
 
 ### What it does
-When the outro room's top edge crosses 50% of the viewport, `outroHit` is set permanently (never unset). The page scrolls to the outro room top, `outroLock` is set, and a `holdDuration` timer begins. On expiry, credits transition fires (or chapter navigation if no credits), the master fades out, and the browser navigates to `config.composition.nextChapter`.
+When leaving a drone-only room (`stems: []`) and entering a loop room, stems start at **full volume from beat 1** after the drone has fully faded out. No gain ramp, no `fadeIn` call. A `droneExitTimers` handle prevents stale timers from a prior visit.
+
+Delay = `audio.fadeOut` (same duration as the drone's `fadeOut` ramp). The loop starts the instant the drone reaches silence.
 
 ### Invariants
 
-- **`outroLock` prevents all scroll** during `holdDuration`. The scroll handler checks `outroLock` first and calls `window.scrollTo` to keep position fixed.
+- **Do not call `fadeIn` for loop stems entering from a drone room.** `fadeIn` would ramp `gain[id]` 0→1 over 3 seconds, producing an audible swell when the intent is a full-volume hit.
+- **Do not call `scheduleImmediately` during a drone exit** (`droneExitActive` flag). The lookahead timer calls `createInstance(id, loopStartTime)` and sets `gain[id]` to 1 at `loopStartTime` on the audio clock.
+- **`activeStems.add(id)` is called directly** (bypassing `fadeIn`) so `activeStems` stays in sync. If the user back-scrolls, `fadeOut` sees the stem as active and handles cleanup correctly.
+- **`droneExitTimers[room.id]`** is cancelled on re-entry to prevent a stale timer from creating duplicate sources.
+- **Drones in the drone room fade out via the normal `fadeOut` path** — no special handling needed on the exit side.
+
+---
+
+## 8. Outro Gate (`scroll-controller.js`)
+
+### What it does
+When the outro room's top edge crosses 50% of the viewport, `outroHit` is set permanently (never unset). The page scrolls to the outro room top, `outroLock` is set, and a `holdDuration` timer begins. On expiry, the master fades out, the visualiser stops, and a chapter button is revealed. The user clicks to navigate — there is no auto-navigation.
+
+### Invariants
+
+- **`outroLock` constrains scroll to within the outro room** — not to a single fixed position. The handler enforces `minScroll = oe.offsetTop` and `maxScroll = getLockBot(outroIdx)`. The user can read all content within the room but cannot exit it.
 - **`outroHit` is a one-way latch** — once true, it stays true. The outro sequence cannot be retriggered by back-scrolling.
 - **`holdDuration` comes from `outroRoom.holdDuration`**, falling back to `config.audio.defaultLoop.duration`. It should be set to a bar-aligned value in config.
-- **Chapter navigation saves volume to `sessionStorage`.** The next chapter reads `aw_volume` on load and restores it. Do not remove this.
+- **After `holdDuration`, a chapter button is revealed — there is no auto-navigation.** `engine.fadeOutMaster()` and `ui.stopVisualiser()` run, then `#chapter-btn` becomes visible. The user clicks to navigate.
+- **`navigateToNextChapter` is called only from the button click handler.** It saves volume to `sessionStorage` before navigating so the next chapter can restore it.
 
 ---
 

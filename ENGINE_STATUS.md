@@ -14,12 +14,15 @@
 | Room-to-room stem transitions (fade in / fade out) | ✓ Confirmed |
 | Drone self-scheduler (independent loop, no phase lock) | ✓ Confirmed |
 | Intro / loop pairs (one-shot → looping stem) | ✓ Confirmed |
-| Drone-to-loop transition (beat 1 restart) | ✓ Fix applied, pending first test |
+| Room intro (one-shot → all stems start together, full volume) | ✓ Implemented |
+| Drone-to-loop transition (full volume, beat 1, after drone fade) | ✓ Implemented — pending first test |
 | Per-room loop durations (3 BPM groups) | ✓ BPM-derived values locked |
 | Stinger (one-shot at scroll ratio) | ✓ Confirmed |
 | Pace lock | ✓ Confirmed |
+| Outro scroll lock (within-room, not fixed point) | ✓ Implemented |
 | 4-room stem sliding window (load / evict) | ✓ Confirmed |
-| Outro hold + master fade + chapter navigation | ✓ Confirmed |
+| Outro hold + chapter button reveal | ✓ Implemented — pending first test |
+| Loop duration diagnostic (console warning on mismatch) | ✓ Implemented |
 
 ---
 
@@ -107,36 +110,23 @@ Config: `"intro": "l9_oneshot"` on the loop stem def. The intro stem ID is in `i
 
 ---
 
-### 4. Drone-to-loop transition — beat 1 restart
+### 4. Drone-to-loop transition — full volume, beat 1, after fade
 
-When leaving a drone-only room (`stems: []`) and entering a loop room, two things must happen together:
+When leaving a drone-only room and entering a loop room, stems start at **full volume from bar 1** after the drone finishes fading. The delay is `audio.fadeOut` seconds (4s), matching the drone's gain ramp to silence.
 
-1. Re-anchor `schedNext` so the next generation falls exactly one loop later
-2. Create sources immediately for already-loaded stems — `fadeIn()` only ramps the gain, it does not create a `BufferSource`
-
-```js
-// In setRoom(), after updating currentLoopDuration:
-const prevWasDroneOnly = prevRoom?.stems?.length === 0;
-if (prevWasDroneOnly && room.stems.length > 0) {
-  schedNext = actx.currentTime + currentLoopDuration;
-}
-
-// Then for each loaded stem entering the room:
-fadeIn(id);
-if (!droneIds.has(id) && !hasUnplayedIntro) {
-  scheduleImmediately(id);  // creates source at offset 0
-}
-```
+- `fadeIn()` is NOT called for loop stems — gain jumps to 1 at `loopStartTime` on the audio clock
+- `scheduleImmediately()` is NOT called — the lookahead timer fires `createInstance(id, loopStartTime)` for each stem
+- `pendingIntroEnds` blocks the scheduler from creating instances during the delay window
+- `droneExitTimers[room.id]` is cancelled on re-entry to prevent duplicate instances
 
 ```js
-function scheduleImmediately(id) {
-  if (!schedRunning || !buf[id] || !gain[id]) return;
-  const loopOffset = Math.max(0, actx.currentTime - (schedNext - currentLoopDuration));
-  createInstance(id, actx.currentTime + 0.05, loopOffset % currentLoopDuration);
-}
+const loopStartTime = actx.currentTime + audio.fadeOut;
+schedNext = loopStartTime + currentLoopDuration;
+room.stems.forEach(id => pendingIntroEnds.set(id, loopStartTime));
+// ... lookahead timer fires at loopStartTime - scheduleAhead:
+gain[id].gain.setValueAtTime(1, loopStartTime);
+createInstance(id, loopStartTime);
 ```
-
-After the `schedNext` reset: `loopStart = actx.currentTime`, `loopOffset ≈ 0`. Sources start from bar 1.
 
 ---
 
@@ -210,5 +200,8 @@ The stem joins phase-locked with stems that were already playing. It starts at t
 ## Still Needs First Listen
 
 - **`l3_drone` and `l6_drone` tailFade = 5s** — actual reverb tail length unknown until heard. Increase if crossfade sounds abrupt.
-- **Drone-to-loop beat-1 fix** — applied but not yet tested in the full Chapter 1 build.
+- **Drone-to-loop transition** — implemented, not yet tested end-to-end with real tracks (scenes 4→5, 7→8).
+- **Room intro timing (scene-11)** — `startDelay: 4`, `gapAfter: 3.6`. These are estimates; tune in config after first listen.
 - **Boom stinger `atScrollRatio: 0.15`** — verify the musical moment lands at the right scroll position in scene 4.
+- **Loop crossfade** — if `[audio]` warnings appear in the browser console, the config `loop.duration` values don't match actual buffer lengths. Correct the config durations to match what the diagnostic reports.
+- **Chapter button appearance** — check timing and aesthetics of the `#chapter-btn` reveal after scene-12 holdDuration.

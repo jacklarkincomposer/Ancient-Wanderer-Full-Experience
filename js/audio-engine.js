@@ -14,6 +14,7 @@ export function createAudioEngine(config) {
   const roomIntroIds = new Set(config.rooms.filter(r => r.roomIntro).map(r => r.roomIntro.id));
   const playedRoomIntros = new Set(); // room ids whose roomIntro has already fired
   const roomIntroTimers = {};         // roomId → setTimeout handle (cancelled on re-entry)
+  const droneExitTimers = {};         // roomId → setTimeout handle for drone-to-loop transitions
 
   let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null;
   let muted = false, ready = false, fadingOut = false;
@@ -383,11 +384,33 @@ export function createAudioEngine(config) {
       currentLoopDuration = audio.defaultLoop.duration;
     }
 
-    // Re-anchor the scheduler to beat 1 when entering a loop room from a drone-only room.
-    // Without this, scheduleImmediately calculates a stale loop offset and starts stems mid-phrase.
+    // Drone-to-loop transition: when leaving a drone-only room, loop stems start at full volume
+    // from beat 1 after the drone finishes fading — no gain ramp, no scheduleImmediately.
+    // pendingIntroEnds blocks the scheduler; a lookahead timer fires createInstance at loopStartTime.
     const prevWasDroneOnly = prevRoom && prevRoom.stems && prevRoom.stems.length === 0;
+    let droneExitActive = false;
     if (prevWasDroneOnly && room.stems && room.stems.length > 0) {
-      schedNext = actx.currentTime + currentLoopDuration;
+      droneExitActive = true;
+      const loopStartTime = actx.currentTime + audio.fadeOut;
+      schedNext = loopStartTime + currentLoopDuration;
+
+      room.stems.forEach(id => pendingIntroEnds.set(id, loopStartTime));
+
+      if (droneExitTimers[room.id]) clearTimeout(droneExitTimers[room.id]);
+
+      const msUntilSchedule = Math.max(0, (loopStartTime - actx.currentTime - audio.scheduleAhead) * 1000);
+      droneExitTimers[room.id] = setTimeout(() => {
+        delete droneExitTimers[room.id];
+        if (!schedRunning) return;
+        room.stems.forEach(id => {
+          pendingIntroEnds.delete(id);
+          if (!activeStems.has(id) || !buf[id] || !gain[id]) return;
+          gain[id].gain.cancelScheduledValues(actx.currentTime);
+          gain[id].gain.setValueAtTime(1, loopStartTime);
+          createInstance(id, loopStartTime);
+        });
+        schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
+      }, msUntilSchedule);
     }
 
     // Room intro: play a one-shot once on first entry, block all room stems until intro + gap has passed.
@@ -452,15 +475,28 @@ export function createAudioEngine(config) {
       if (!activeStems.has(id)) {
         entering.push(id);
         if (loadedStems.has(id)) {
-          fadeIn(id);
-          // For regular loop stems, ensure a source is live immediately.
-          // fadeIn() only ramps the gain — it doesn't create a new source. The scheduler's
-          // existing instance may have already ended (file shorter than prior loop interval),
-          // so kick off a new one aligned to the current schedule grid.
-          const def = stemMap[id];
-          const hasUnplayedIntro = def && def.intro && !playedIntros.has(id);
-          if (!droneIds.has(id) && !hasUnplayedIntro && !roomIntroActive) {
-            scheduleImmediately(id);
+          if (droneExitActive && !droneIds.has(id)) {
+            // Drone exit: stem activates silently and waits for the lookahead timer.
+            // No fadeIn ramp — gain jumps to 1 at loopStartTime on the audio clock.
+            // No scheduleImmediately — the timer's createInstance handles source creation.
+            activeStems.add(id);
+            if (!gain[id]) {
+              const g = actx.createGain();
+              g.gain.value = 0;
+              g.connect(mg);
+              gain[id] = g;
+            }
+          } else {
+            fadeIn(id);
+            // For regular loop stems, ensure a source is live immediately.
+            // fadeIn() only ramps the gain — it doesn't create a new source. The scheduler's
+            // existing instance may have already ended (file shorter than prior loop interval),
+            // so kick off a new one aligned to the current schedule grid.
+            const def = stemMap[id];
+            const hasUnplayedIntro = def && def.intro && !playedIntros.has(id);
+            if (!droneIds.has(id) && !hasUnplayedIntro && !roomIntroActive) {
+              scheduleImmediately(id);
+            }
           }
         } else {
           // Mark as pending — will fade in when loaded
@@ -595,6 +631,12 @@ export function createAudioEngine(config) {
               // One-shot stem: buffer ready for playback, not added to loop scheduler
               stemLoadedCallbacks.forEach(cb => cb(id));
               return;
+            }
+            // Warn if buffer duration differs from the configured loop duration by more than 100ms.
+            // A mismatch causes the crossfade to fire at the wrong loop point — gaps or double-hits.
+            if (!droneIds.has(id)) {
+              const diff = Math.abs(buf[id].duration - audio.defaultLoop.duration);
+              if (diff > 0.1) console.warn(`[audio] ${id}: buffer ${buf[id].duration.toFixed(3)}s vs defaultLoop ${audio.defaultLoop.duration}s (Δ${diff.toFixed(3)}s) — verify config loop.duration`);
             }
             if (droneIds.has(id)) {
               // Drone: enters loadedStems and gets a gain node, loop scheduler ignores it
