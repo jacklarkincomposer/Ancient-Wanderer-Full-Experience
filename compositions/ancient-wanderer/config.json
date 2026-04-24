@@ -76,8 +76,8 @@
 
     { "id": "l9_oneshot", "file": "l9_One_Shot_Orchestra.mp3", "label": "One-Shot Orchestra", "group": "orchestra" },
 
-    { "id": "l10_dulcimer_lutes", "file": "l10_Dulclimer_Lutes_2.mp3", "label": "Dulcimer, Lutes", "group": "strings", "tailFade": 3, "intro": "l9_oneshot" },
-    { "id": "l10_strings",        "file": "l10_Strings_1.mp3",         "label": "Strings",         "group": "strings", "tailFade": 3.5, "intro": "l9_oneshot" },
+    { "id": "l10_dulcimer_lutes", "file": "l10_Dulclimer_Lutes_2.mp3", "label": "Dulcimer, Lutes", "group": "strings", "tailFade": 3 },
+    { "id": "l10_strings",        "file": "l10_Strings_1.mp3",         "label": "Strings",         "group": "strings", "tailFade": 3.5 },
 
     { "id": "l11_choir",          "file": "l11_Choirs.mp3",            "label": "Choir",            "group": "vocals",     "tailFade": 3 },
     { "id": "l11_dulcimer_lutes", "file": "l11_Dulclimer_Lutes_3.mp3", "label": "Dulcimer, Lutes",  "group": "strings",    "tailFade": 1.5 },
@@ -92,13 +92,13 @@
       "id": "scene-1",
       "stems": ["l1_harp", "l1_furaja"],
       "paceLock": 10,
-      "loop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.529, "bars": 13, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-2",
       "stems": ["l1_harp", "l1_furaja", "l1_1st_violins", "l1_2nd_violins_pizz", "l1_taikos"],
       "paceLock": 10,
-      "loop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.529, "bars": 13, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-3",
@@ -107,7 +107,7 @@
         "l2_furaja_ren_flutes", "l2_low_string", "l2_solo_oo", "l2_taikos"
       ],
       "paceLock": 10,
-      "loop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.529, "bars": 13, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-4",
@@ -163,7 +163,13 @@
       "id": "scene-11",
       "stems": ["l10_dulcimer_lutes", "l10_strings"],
       "paceLock": 55,
-      "loop": { "duration": 28.8, "bars": 8, "bpm": 50, "timeSignature": [3, 4] }
+      "loop": { "duration": 28.8, "bars": 8, "bpm": 50, "timeSignature": [3, 4] },
+      "roomIntro": {
+        "id": "l9_oneshot",
+        "fadeIn": 0.05,
+        "startDelay": 4,
+        "gapAfter": 3.6
+      }
     },
     {
       "id": "scene-12",

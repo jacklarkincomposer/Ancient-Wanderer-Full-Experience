@@ -10,6 +10,10 @@ export function createAudioEngine(config) {
   const stingerIds = new Set((config.stingers || []).map(s => s.id));
   // Drone stems loop continuously on their own source — they never enter the phase-locked scheduler
   const droneIds = new Set(stemDefs.filter(s => s.type === 'drone').map(s => s.id));
+  // Room intro stems: play once on first room entry, not in loadedStems, not in scheduler
+  const roomIntroIds = new Set(config.rooms.filter(r => r.roomIntro).map(r => r.roomIntro.id));
+  const playedRoomIntros = new Set(); // room ids whose roomIntro has already fired
+  const roomIntroTimers = {};         // roomId → setTimeout handle (cancelled on re-entry)
 
   let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null;
   let muted = false, ready = false, fadingOut = false;
@@ -90,8 +94,8 @@ export function createAudioEngine(config) {
       buf[id] = await fetchStem(id, 1);
       loadingStems.delete(id);
       if (buf[id]) {
-        if (introStemIds.has(id) || stingerIds.has(id)) {
-          // One-shot stems (intros + stingers): buffer stored for playback, never enter the loop scheduler
+        if (introStemIds.has(id) || stingerIds.has(id) || roomIntroIds.has(id)) {
+          // One-shot stems (intros + stingers + room intros): buffer stored for playback, never enter the loop scheduler
           stemLoadedCallbacks.forEach(cb => cb(id));
         } else if (droneIds.has(id)) {
           // Drone: enters loadedStems so setRoom can call fadeIn, but loop scheduler ignores it
@@ -386,6 +390,63 @@ export function createAudioEngine(config) {
       schedNext = actx.currentTime + currentLoopDuration;
     }
 
+    // Room intro: play a one-shot once on first entry, block all room stems until intro + gap has passed.
+    // The one-shot routes directly to mg (not through any stem's gain node) so it plays at full volume
+    // regardless of the stems' fade state. stems are blocked via pendingIntroEnds and a lookahead timer
+    // fires createInstance for each stem at exactly loopStartTime on the audio clock.
+    let roomIntroActive = false;
+    if (room.roomIntro && !playedRoomIntros.has(room.id) && buf[room.roomIntro.id]) {
+      playedRoomIntros.add(room.id);
+      roomIntroActive = true;
+
+      const intro        = room.roomIntro;
+      const introFadeIn  = intro.fadeIn    != null ? intro.fadeIn    : 0.05;
+      const startDelay   = intro.startDelay != null ? intro.startDelay : 0;
+      const gapAfter     = intro.gapAfter  != null ? intro.gapAfter  : 0;
+
+      const introStartTime = actx.currentTime + 0.05 + startDelay;
+      const loopStartTime  = introStartTime + buf[intro.id].duration + gapAfter;
+
+      // Play the one-shot through a dedicated source → g → mg path
+      const src = actx.createBufferSource();
+      src.buffer = buf[intro.id];
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, introStartTime);
+      g.gain.linearRampToValueAtTime(1, introStartTime + introFadeIn);
+      src.connect(g);
+      g.connect(mg);
+      src.start(introStartTime);
+      activeSrc.push(src);
+      src.onended = () => {
+        const i = activeSrc.indexOf(src);
+        if (i > -1) activeSrc.splice(i, 1);
+        try { g.disconnect(); } catch (e) {}
+      };
+
+      // Block all room stems from the scheduler until loopStartTime
+      room.stems.forEach(id => pendingIntroEnds.set(id, loopStartTime));
+
+      // Push schedNext past the intro so the first generation falls one loop after the handoff
+      schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
+
+      // Cancel any stale timer from a previous visit (user back-scrolled before it fired)
+      if (roomIntroTimers[room.id]) clearTimeout(roomIntroTimers[room.id]);
+
+      // Fire a lookahead timer to start all stems at the precise audio-clock moment
+      const msUntilSchedule = Math.max(0, (loopStartTime - actx.currentTime - audio.scheduleAhead) * 1000);
+      roomIntroTimers[room.id] = setTimeout(() => {
+        delete roomIntroTimers[room.id];
+        if (!schedRunning) return;
+        room.stems.forEach(id => {
+          pendingIntroEnds.delete(id);
+          if (buf[id] && gain[id] && activeStems.has(id)) {
+            createInstance(id, loopStartTime);
+          }
+        });
+        schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
+      }, msUntilSchedule);
+    }
+
     // Fade in stems in target
     target.forEach(id => {
       if (!activeStems.has(id)) {
@@ -398,7 +459,7 @@ export function createAudioEngine(config) {
           // so kick off a new one aligned to the current schedule grid.
           const def = stemMap[id];
           const hasUnplayedIntro = def && def.intro && !playedIntros.has(id);
-          if (!droneIds.has(id) && !hasUnplayedIntro) {
+          if (!droneIds.has(id) && !hasUnplayedIntro && !roomIntroActive) {
             scheduleImmediately(id);
           }
         } else {
@@ -530,7 +591,7 @@ export function createAudioEngine(config) {
           buf[id] = await actx.decodeAudioData(prefetchedBuffers[id]);
           delete prefetchedBuffers[id];
           if (buf[id]) {
-            if (introStemIds.has(id) || stingerIds.has(id)) {
+            if (introStemIds.has(id) || stingerIds.has(id) || roomIntroIds.has(id)) {
               // One-shot stem: buffer ready for playback, not added to loop scheduler
               stemLoadedCallbacks.forEach(cb => cb(id));
               return;

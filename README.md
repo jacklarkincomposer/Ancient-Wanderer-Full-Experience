@@ -87,18 +87,21 @@ All composition data lives in `compositions/ancient-wanderer/config.json`. The e
 
 ### Adding a new stem
 
-1. Upload the WAV file to the R2 CDN at the `cdnBase` path in config.
+1. Upload the MP3 file to the R2 CDN at the `cdnBase` path in config.
 2. Add an entry to the `stems` array:
 ```json
 {
   "id": "flute",
-  "file": "Flute_Melody.wav",
+  "file": "Flute_Melody.mp3",
   "label": "Flute",
-  "group": "woodwind"
+  "group": "woodwind",
+  "tailFade": 3
 }
 ```
 
-3. Reference the `id` in any room's `stems` array.
+For a drone stem add `"type": "drone"`. For a stem with an intro one-shot add `"intro": "<intro-stem-id>"`.
+
+3. Reference the `id` in any room's `stems` array (or `drones` array for drones).
 
 No engine code changes required.
 
@@ -123,7 +126,7 @@ Add an entry to the `rooms` array:
 {
   "audio": {
     "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Stems/",
-    "defaultLoop": { "duration": 19.2, "bars": 16, "bpm": 150, "timeSignature": [3,4] },
+    "defaultLoop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3,4] },
     "fadeIn": 3,
     "fadeOut": 4,
     "masterGain": 0.8,
@@ -131,10 +134,22 @@ Add an entry to the `rooms` array:
     "scheduleAhead": 1.5,
     "scheduleInterval": 200
   },
-  "stems": [ { "id": "...", "file": "...", "label": "...", "group": "..." } ],
-  "rooms": [ { "id": "...", "stems": [...], "paceLock": 10 } ],
-  "impacts": [ { "afterRoom": "...", "id": "...", "duckTo": 0.4, "duckIn": 1.8, "duckOut": 2.2 } ],
-  "stingers": []
+  "stems": [
+    { "id": "...", "file": "...", "label": "...", "group": "...", "tailFade": 3 },
+    { "id": "...", "file": "...", "type": "drone", "tailFade": 5 },
+    { "id": "...", "file": "...", "intro": "<intro-stem-id>", "tailFade": 3 }
+  ],
+  "rooms": [
+    { "id": "...", "stems": [...], "paceLock": 10 },
+    { "id": "...", "stems": [], "drones": ["..."], "paceLock": 15,
+      "stingers": [{ "id": "boom", "atScrollRatio": 0.15 }] },
+    { "id": "...", "stems": [...],
+      "loop": { "duration": 28.8, "bars": 8, "bpm": 50, "timeSignature": [3,4] },
+      "paceLock": 30, "isOutro": true, "holdDuration": 28.8 }
+  ],
+  "stingers": [
+    { "id": "boom", "file": "Boom_Stinger.mp3", "gain": 0.9 }
+  ]
 }
 ```
 
@@ -153,11 +168,25 @@ The Web Audio API's clock is sample-accurate but JavaScript timers are not. The 
 
 All stems in a generation start at an identical `when` timestamp, ensuring perfect phase coherence regardless of CPU load.
 
-### Why all stems play at gain 0
+### Per-instance gain and tail crossfades
 
-Every loaded stem gets a `BufferSource` scheduled at every generation, even if it is not active in the current room. Inactive stems play silently at `gain = 0`. The `GainNode` is the only switch.
+Each `BufferSource` gets its own `instGain` node. When the next loop instance starts, the previous one fades out on its own `instGain` using an exponential ramp — not a linear one, which would sound like a splice. Reverb tails decay naturally rather than cutting.
 
-When a room transition happens and a stem needs to fade in, its `BufferSource` is already running — `fadeIn()` simply ramps the `GainNode` from 0 to 1 over 3 seconds and audio appears immediately. There is no waiting for the next loop boundary.
+Signal path: `source → instGain → gain[id] → master`
+
+The `tailFade` value is configured per stem in seconds. The exponential ramp targets `0.0001` (never `0`, which the Web Audio API rejects on an exponential ramp).
+
+### Drone self-scheduler
+
+Drones loop on their own `setTimeout` chain, crossfading at `duration - tailFade`. They never enter the phase-locked scheduler — their loop length is the decoded buffer duration, not the composition's bar-aligned loop duration. Drone rooms have `"stems": []` and a separate `"drones": [...]` array.
+
+### Intro / loop pairs
+
+A stem can have an intro: a one-shot that plays first, after which the stem loops. The scheduler is blocked for that stem until the intro finishes. A lookahead timer schedules the first loop instance on the audio clock at `introEndTime - tailFade`, then re-anchors `schedNext`. Config: `"intro": "<intro-stem-id>"` on the looping stem.
+
+### Stingers
+
+One-shot audio events fired at a specific scroll ratio within a room. Config: `"stingers": [{ "id": "boom", "atScrollRatio": 0.15 }]` on the room, with the stinger file defined in the top-level `stingers` array.
 
 ### Lazy loader
 
@@ -190,9 +219,9 @@ Stem audio is fetched from the Cloudflare R2 CDN. CORS headers are configured fo
 
 ## Known Limitations
 
-**Load time on mobile** — Stems are uncompressed WAV files, typically 5–15 MB each. On slow connections the initial fetch can take 10–20 seconds. The fetch progress bar indicates loading status.
+**Load time on mobile** — Stems are MP3 files, typically 5–15 MB each. On slow connections the initial fetch can take 10–20 seconds. The fetch progress bar indicates loading status.
 
-**WAV format** — WAV is used for lossless audio quality. OGG/Opus compression would reduce file sizes by ~90% but is not yet implemented.
+**Compression** — Stems are currently MP3. OGG/Opus compression would reduce file sizes further but is not yet implemented.
 
 **Browser autoplay policy** — All browsers block `AudioContext` creation until a user gesture. The enter button serves as the required gesture.
 
@@ -205,7 +234,6 @@ Stem audio is fetched from the Cloudflare R2 CDN. CORS headers are configured fo
 ## Roadmap
 
 - **OGG/Opus compression** — Reduce stem sizes by ~90%
-- **Stingers** — One-shot audio events at specific scroll positions. Schema is in config (`stingers: []`), engine implementation pending
 - **Video integration** — Replace static scene images with looping video clips
 - **30+ stem orchestral template** — Full orchestral group system with per-section pre-mixed stems
 
