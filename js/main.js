@@ -5,10 +5,8 @@ import { createStemLoader } from './stem-loader.js';
 import { createScrollController } from './scroll-controller.js';
 import { initUI } from './ui.js';
 
-const compositionId = new URLSearchParams(window.location.search).get('c')
-  || document.body.dataset.composition
-  || 'ancient-wanderer';
-const configUrl = `compositions/${compositionId}/config.json`;
+const compositionId = document.body.dataset.composition || 'cursed-village';
+const configUrl = `/compositions/${compositionId}/config.json`;
 
 async function boot() {
   const config = await fetch(configUrl).then(r => r.json());

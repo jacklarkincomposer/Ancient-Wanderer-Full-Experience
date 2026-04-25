@@ -33,6 +33,14 @@ export function createAudioEngine(config) {
   const pendingIntroEnds = new Map(); // id → Web Audio timestamp when the intro finishes, so the scheduler waits for it
   const droneTimers = {}; // id → setTimeout handle for drone self-rescheduling
 
+  // Map stem id → expected loop duration, built from rooms array.
+  // Used by the decode diagnostic to warn only on real mismatches.
+  const stemExpectedLoop = {};
+  config.rooms.forEach(r => {
+    const dur = r.loop ? r.loop.duration : audio.defaultLoop.duration;
+    (r.stems || []).forEach(id => { if (stemExpectedLoop[id] == null) stemExpectedLoop[id] = dur; });
+  });
+
   const prefetchedBuffers = {}; // id → ArrayBuffer (raw, not decoded)
 
   let schedNext = 0;
@@ -312,6 +320,10 @@ export function createAudioEngine(config) {
           gain[id] = g;
         }
         const introStartTime = actx.currentTime + 0.05;
+        // Intro plays at full volume — set gain to 1 at introStartTime on the audio clock,
+        // bypassing the trailing linearRamp at the bottom of fadeIn.
+        gain[id].gain.cancelScheduledValues(introStartTime);
+        gain[id].gain.setValueAtTime(1, introStartTime);
         const introEndTime = introStartTime + buf[def.intro].duration;
         const loopStartTime = introEndTime;
         pendingIntroEnds.set(id, loopStartTime);
@@ -345,6 +357,7 @@ export function createAudioEngine(config) {
           // intro handoff, not at a stale boundary from before the intro started.
           schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
         }, msUntilSchedule);
+        return; // gain is already set to 1 at introStartTime — skip the trailing linearRamp below
       }
     }
 
@@ -651,11 +664,14 @@ export function createAudioEngine(config) {
               stemLoadedCallbacks.forEach(cb => cb(id));
               return;
             }
-            // Warn if buffer duration differs from the configured loop duration by more than 100ms.
-            // A mismatch causes the crossfade to fire at the wrong loop point — gaps or double-hits.
-            if (!droneIds.has(id)) {
-              const diff = Math.abs(buf[id].duration - audio.defaultLoop.duration);
-              if (diff > 0.1) console.warn(`[audio] ${id}: buffer ${buf[id].duration.toFixed(3)}s vs defaultLoop ${audio.defaultLoop.duration}s (Δ${diff.toFixed(3)}s) — verify config loop.duration`);
+            // Warn if buffer duration differs from the room's configured loop duration by more than 100ms.
+            // A mismatch causes the click-preventer to fire at the wrong loop point — gaps or double-hits.
+            if (!droneIds.has(id) && !roomIntroIds.has(id) && !introStemIds.has(id) && !stingerIds.has(id)) {
+              const expected = stemExpectedLoop[id];
+              if (expected != null) {
+                const diff = Math.abs(buf[id].duration - expected);
+                if (diff > 0.1) console.warn(`[audio] ${id}: buffer ${buf[id].duration.toFixed(3)}s vs expected ${expected}s (Δ${diff.toFixed(3)}s) — verify config loop.duration for this room`);
+              }
             }
             if (droneIds.has(id)) {
               // Drone: enters loadedStems and gets a gain node, loop scheduler ignores it

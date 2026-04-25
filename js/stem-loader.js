@@ -11,57 +11,28 @@ export function createStemLoader(engine, config) {
     return [...rooms[idx].stems, ...drones, ...stingerIds, ...roomIntroId];
   }
 
-  function getUniqueStemsForRoom(idx) {
-    // Returns stems used ONLY in this room and not in adjacent rooms
-    const roomStems = new Set(getStemsForRoom(idx));
-    const adjacent = new Set();
-    if (idx > 0) getStemsForRoom(idx - 1).forEach(s => adjacent.add(s));
-    if (idx < rooms.length - 1) getStemsForRoom(idx + 1).forEach(s => adjacent.add(s));
-    return [...roomStems].filter(s => !adjacent.has(s));
-  }
-
   async function prepareForRoom(idx, onProgress) {
     const current = getStemsForRoom(idx);
     const next = idx < rooms.length - 1 ? getStemsForRoom(idx + 1) : [];
     const prev = idx > 0 ? getStemsForRoom(idx - 1) : [];
 
-    // Also load stems needed by credits transition (if this room or next is the outro)
-    const outroRoom = rooms.find(r => r.isOutro);
-    let creditsStems = [];
-    if (outroRoom && outroRoom.creditsTransition) {
-      const outroIdx = rooms.indexOf(outroRoom);
-      if (idx >= outroIdx - 1) {
-        creditsStems = outroRoom.creditsTransition.stemsOn || [];
-      }
-    }
-
     // Deduplicate — current first (highest priority)
-    const all = [...new Set([...current, ...creditsStems, ...next, ...prev])];
+    const all = [...new Set([...current, ...next, ...prev])];
+    const stillNeeded = new Set(all);
 
-    // Load current room stems first, then the rest
+    // Load current room stems first, then the rest fire-and-forget
     await engine.loadStems(current, onProgress);
     const remaining = all.filter(s => !current.includes(s));
-    if (remaining.length > 0) {
-      engine.loadStems(remaining, onProgress); // fire-and-forget for next/prev
-    }
+    if (remaining.length > 0) engine.loadStems(remaining, onProgress);
 
-    // Evict stems from rooms 2+ behind
+    // Evict stems from rooms outside the current 3-room window that aren't still needed
     if (idx >= 3) {
       for (let i = 0; i <= idx - 3; i++) {
-        evict(i);
+        const candidates = getStemsForRoom(i).filter(s => !stillNeeded.has(s));
+        if (candidates.length > 0) engine.unloadStems(candidates);
       }
     }
   }
 
-  function evict(idx) {
-    const unique = getUniqueStemsForRoom(idx);
-    if (unique.length > 0) {
-      engine.unloadStems(unique);
-    }
-  }
-
-  return {
-    prepareForRoom,
-    evict,
-  };
+  return { prepareForRoom };
 }

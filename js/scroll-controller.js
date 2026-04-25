@@ -3,7 +3,9 @@
 export function createScrollController(config, engine, loader, ui) {
   const rooms = config.rooms;
   const impacts = config.impacts || [];
-  const firedStingers = new Set();
+  const firedStingers = new Set(); // keyed as "roomId:stingerId" to allow same stinger in multiple rooms
+  const outroRoom = rooms.find(r => r.isOutro) || null;
+  const outroIdx = outroRoom ? rooms.indexOf(outroRoom) : -1;
 
   // ── Pace lock ──
   const pl = document.getElementById('pace-lock');
@@ -79,10 +81,11 @@ export function createScrollController(config, engine, loader, ui) {
     const sectionTop = el.offsetTop;
     const sectionHeight = el.offsetHeight;
     room.stingers.forEach(s => {
-      if (firedStingers.has(s.id)) return;
+      const key = room.id + ':' + s.id;
+      if (firedStingers.has(key)) return;
       const triggerY = sectionTop + sectionHeight * s.atScrollRatio;
       if (window.scrollY + window.innerHeight * 0.5 >= triggerY) {
-        firedStingers.add(s.id);
+        firedStingers.add(key);
         engine.playStinger(s.id);
       }
     });
@@ -162,7 +165,6 @@ export function createScrollController(config, engine, loader, ui) {
     }
 
     // Outro gate
-    const outroRoom = rooms.find(r => r.isOutro);
     if (outroRoom) {
       const oe = document.getElementById(outroRoom.id);
       if (oe && !outroHit && oe.getBoundingClientRect().top < window.innerHeight * 0.5) {
@@ -176,43 +178,19 @@ export function createScrollController(config, engine, loader, ui) {
         document.getElementById(outroRoom.id).classList.add('outro-in-view');
 
         const holdMs = (outroRoom.holdDuration || config.audio.defaultLoop.duration) * 1000;
-        const ct = outroRoom.creditsTransition;
 
         setTimeout(() => {
           if (creditsDone) return;
           creditsDone = true;
           outroLock = false;
-
-          if (ct) {
-            (ct.stemsOff || []).forEach(id => engine.fadeOut(id));
-            (ct.stemsOn || []).forEach(id => engine.fadeIn(id));
-            ui.updateStemIndicators(engine);
-
-            pl.classList.add('show');
-            setTimeout(() => {
-              pl.classList.remove('show');
-              const c = document.getElementById('credits');
-              c.classList.add('revealed');
-              c.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              const fadeDelay = (ct.finalFadeAfterLoops || 3) * config.audio.defaultLoop.duration * 1000;
-              setTimeout(() => {
-                engine.fadeOutMaster();
-                setTimeout(() => {
-                  ui.stopVisualiser();
-                  navigateToNextChapter(config);
-                }, config.audio.masterFadeOut * 1000);
-              }, fadeDelay);
-            }, 2000);
-          } else if (config.composition && config.composition.nextChapter) {
-            // No credits — fade out audio and reveal the chapter button. User navigates manually.
-            engine.fadeOutMaster();
-            ui.stopVisualiser();
-            const btn = document.getElementById('chapter-btn');
-            if (btn) {
-              btn.href = config.composition.nextChapter;
-              btn.classList.remove('hidden');
-              btn.classList.add('revealed');
-            }
+          engine.fadeOutMaster();
+          ui.stopVisualiser();
+          const btn = document.getElementById('chapter-btn');
+          if (btn) {
+            btn.href = config.composition.nextChapter;
+            if (config.composition.nextChapterLabel) btn.textContent = config.composition.nextChapterLabel;
+            btn.classList.remove('hidden');
+            btn.classList.add('revealed');
           }
         }, holdMs);
       }
@@ -273,10 +251,8 @@ export function createScrollController(config, engine, loader, ui) {
       engine.resumeContext();
       ui.hideArrow();
       if (outroLock) {
-        const outroRoom = rooms.find(r => r.isOutro);
         if (outroRoom) {
           const oe = document.getElementById(outroRoom.id);
-          const outroIdx = rooms.indexOf(outroRoom);
           const minScroll = oe ? oe.offsetTop : 0;
           const maxScroll = getLockBot(outroIdx);
           if (window.scrollY < minScroll) window.scrollTo({ top: minScroll, behavior: 'instant' });
