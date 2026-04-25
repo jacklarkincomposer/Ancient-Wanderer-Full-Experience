@@ -389,8 +389,11 @@ export function createAudioEngine(config) {
     // from beat 1 after the drone finishes fading — no gain ramp, no scheduleImmediately.
     // pendingIntroEnds blocks the scheduler; a lookahead timer fires createInstance at loopStartTime.
     const prevWasDroneOnly = prevRoom && prevRoom.stems && prevRoom.stems.length === 0;
+    // Don't run drone-exit if a roomIntro is about to fire — the roomIntro's lookahead timer
+    // handles stem scheduling and gain, so the drone-exit timer would start loops too early.
+    const willPlayRoomIntro = !!(room.roomIntro && !playedRoomIntros.has(room.id) && buf[room.roomIntro.id]);
     let droneExitActive = false;
-    if (prevWasDroneOnly && room.stems && room.stems.length > 0) {
+    if (prevWasDroneOnly && room.stems && room.stems.length > 0 && !willPlayRoomIntro) {
       droneExitActive = true;
       const loopStartTime = actx.currentTime + audio.fadeOut;
       schedNext = loopStartTime + currentLoopDuration;
