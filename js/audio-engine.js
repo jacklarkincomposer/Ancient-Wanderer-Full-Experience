@@ -173,7 +173,6 @@ export function createAudioEngine(config) {
   // This lets us fade out the previous instance independently of the incoming one,
   // so reverb tails printed into the buffer decay cleanly instead of doubling with the new loop's attack.
   function createInstance(id, when, offset) {
-    console.log(`[sched] ${id} | scheduled: ${when.toFixed(3)}s | now: ${actx.currentTime.toFixed(3)}s | buf: ${buf[id] ? buf[id].duration.toFixed(3) : '?'}s | offset: ${offset != null ? offset.toFixed(3) : 0}`);
     const src = actx.createBufferSource();
     src.buffer = buf[id];
     const instGain = actx.createGain();
@@ -187,15 +186,19 @@ export function createAudioEngine(config) {
     }
     activeSrc.push(src);
 
-    // Fade out the previous instance of this stem — exponential decay matches natural reverb curve.
     const def = stemMap[id];
     const tailFade = def && def.tailFade != null ? def.tailFade : 3;
     const prev = lastInstance[id];
     if (prev) {
-      const g = prev.instGain.gain;
-      g.setValueAtTime(1, when);
-      g.exponentialRampToValueAtTime(0.0001, when + tailFade);
-      try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
+      if (droneIds.has(id)) {
+        // Drones: crossfade so the atmospheric loop never has a hard boundary.
+        const g = prev.instGain.gain;
+        g.setValueAtTime(1, when);
+        g.exponentialRampToValueAtTime(0.0001, when + tailFade);
+        try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
+      }
+      // Loop stems: old instance plays at full gain to its natural buffer end.
+      // The new instance starts simultaneously — both run together at the loop boundary.
     }
 
     const instance = { source: src, instGain };
