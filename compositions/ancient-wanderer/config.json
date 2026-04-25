@@ -43,6 +43,8 @@
     { "id": "l4_light_percussion",    "file": "l4_Light_Percussion_3.mp3",     "label": "Light Percussion",       "group": "percussion", "tailFade": 1.5 },
     { "id": "l4_ocarinas",            "file": "l4_Ocarinas.mp3",               "label": "Ocarinas",               "group": "winds",      "tailFade": 1.5 },
     { "id": "l4_strings",             "file": "l4_Strings_4.mp3",              "label": "Strings",                "group": "strings",    "tailFade": 1.5 },
+    { "id": "l4_sus_cymbal",          "file": "l4_Sus_Cymbal.mp3",             "label": "Sustained Cymbal",       "group": "percussion", "tailFade": 3 },
+    { "id": "l4_intro",               "file": "l4_Intro.mp3",                  "label": "Intro",                  "group": "orchestra" },
 
     { "id": "l5_harp_dulcimer_lutes", "file": "l5_Harp_Dulclimer_Lutes_1.mp3",          "label": "Harp, Dulcimer, Lutes",              "group": "strings",    "tailFade": 1.5 },
     { "id": "l5_irish_whistle_ren",   "file": "l5_Irish_whistle_Renaisance_Flutes.mp3", "label": "Irish Whistle + Renaissance Flutes", "group": "winds",      "tailFade": 1.5 },
@@ -118,9 +120,15 @@
     },
     {
       "id": "scene-5",
-      "stems": ["l4_harp_dulcimer_lutes", "l4_light_percussion", "l4_ocarinas", "l4_strings"],
+      "stems": ["l4_harp_dulcimer_lutes", "l4_light_percussion", "l4_ocarinas", "l4_strings", "l4_sus_cymbal"],
       "paceLock": 10,
-      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
+      "roomIntro": {
+        "id": "l4_intro",
+        "fadeIn": 0.05,
+        "startDelay": 0,
+        "loopAt": 20
+      }
     },
     {
       "id": "scene-6",
@@ -174,11 +182,6 @@
     },
     {
       "id": "scene-12",
-      "stems": [],
-      "paceLock": 0
-    },
-    {
-      "id": "scene-13",
       "stems": [
         "l11_choir", "l11_dulcimer_lutes", "l11_female_shouts",
         "l11_heavy_perc", "l11_low_brass", "l11_strings", "l11_uilleann_pipes"

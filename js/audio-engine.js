@@ -429,7 +429,9 @@ export function createAudioEngine(config) {
       const gapAfter     = intro.gapAfter  != null ? intro.gapAfter  : 0;
 
       const introStartTime = actx.currentTime + 0.05 + startDelay;
-      const loopStartTime  = introStartTime + buf[intro.id].duration + gapAfter;
+      const loopStartTime  = intro.loopAt != null
+        ? introStartTime + intro.loopAt
+        : introStartTime + buf[intro.id].duration + gapAfter;
 
       // Play the one-shot through a dedicated source → g → mg path
       const src = actx.createBufferSource();
