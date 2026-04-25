@@ -126,8 +126,8 @@ export function createAudioEngine(config) {
             g.connect(mg);
             gain[id] = g;
           }
-          // Skip scheduleImmediately if an intro is currently mid-play — scheduler picks it up at schedNext
-          if (!(playedIntros.has(id) && lastInstance[id])) {
+          // Skip scheduleImmediately if a stem-level intro is mid-play, or if a roomIntro is blocking this stem
+          if (!(playedIntros.has(id) && lastInstance[id]) && !pendingIntroEnds.has(id)) {
             scheduleImmediately(id);
           }
           // Check pending fades
@@ -135,9 +135,13 @@ export function createAudioEngine(config) {
             const roomIdx = pendingFades.get(id);
             pendingFades.delete(id);
             if (roomIdx === currentRoomIndex) {
-              // setRoom added to activeStems directly (stem wasn't loaded yet) — undo so fadeIn can re-process
               activeStems.delete(id);
-              fadeIn(id);
+              if (pendingIntroEnds.has(id)) {
+                // roomIntro is still pending — stem arrived late; add silently, the lookahead timer handles it
+                activeStems.add(id);
+              } else {
+                fadeIn(id);
+              }
             }
           }
           stemLoadedCallbacks.forEach(cb => cb(id));
