@@ -190,18 +190,28 @@ export function createAudioEngine(config) {
     }
     activeSrc.push(src);
 
-    // Fade out the previous instance of this stem — exponential decay matches natural reverb curve.
-    const def = stemMap[id];
-    const tailFade = def && def.tailFade != null ? def.tailFade : 3;
     const prev = lastInstance[id];
     if (prev) {
-      const g = prev.instGain.gain;
-      g.setValueAtTime(1, when);
-      g.exponentialRampToValueAtTime(0.0001, when + tailFade);
-      try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
+      if (droneIds.has(id)) {
+        // Drones: keep crossfade — intentional overlap covers MP3 encoder-delay gap at loop boundary.
+        const def = stemMap[id];
+        const tailFade = def && def.tailFade != null ? def.tailFade : 3;
+        const g = prev.instGain.gain;
+        g.setValueAtTime(1, when);
+        g.exponentialRampToValueAtTime(0.0001, when + tailFade);
+        try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
+      } else {
+        // Loop stems: let the baked reverb tail play out naturally.
+        // Tiny end fade only to prevent a click at the hard buffer boundary.
+        const g = prev.instGain.gain;
+        const fadeLen = 0.05;
+        g.setValueAtTime(1, prev.naturalEnd - fadeLen);
+        g.linearRampToValueAtTime(0, prev.naturalEnd);
+      }
     }
 
-    const instance = { source: src, instGain };
+    const naturalEnd = when + buf[id].duration - (offset != null ? offset : 0);
+    const instance = { source: src, instGain, naturalEnd };
     lastInstance[id] = instance;
 
     src.onended = () => {
@@ -303,10 +313,7 @@ export function createAudioEngine(config) {
         }
         const introStartTime = actx.currentTime + 0.05;
         const introEndTime = introStartTime + buf[def.intro].duration;
-        const tailFade = def.tailFade != null ? def.tailFade : 3;
-        // Start the loop tailFade seconds before the intro ends so the crossfade
-        // mechanism bridges them — same behaviour as every loop-to-loop transition.
-        const loopStartTime = introEndTime - tailFade;
+        const loopStartTime = introEndTime;
         pendingIntroEnds.set(id, loopStartTime);
 
         const src = actx.createBufferSource();

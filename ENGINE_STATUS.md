@@ -15,7 +15,9 @@
 | Drone self-scheduler (independent loop, no phase lock) | ✓ Confirmed |
 | Intro / loop pairs (one-shot → looping stem) | ✓ Confirmed |
 | Room intro (one-shot → all stems start together, full volume) | ✓ Implemented |
+| Room intro `loopAt` field (exact loop entry time, overrides buffer duration) | ✓ Implemented (scene-5) |
 | Drone-to-loop transition (full volume, beat 1, after drone fade) | ✓ Implemented — pending first test |
+| Drone → room-with-roomIntro (roomIntro takes priority, drone-exit skipped) | ✓ Fixed |
 | Per-room loop durations (3 BPM groups) | ✓ BPM-derived values locked |
 | Stinger (one-shot at scroll ratio) | ✓ Confirmed |
 | Pace lock | ✓ Confirmed |
@@ -110,7 +112,29 @@ Config: `"intro": "l9_oneshot"` on the loop stem def. The intro stem ID is in `i
 
 ---
 
-### 4. Drone-to-loop transition — full volume, beat 1, after fade
+### 4. Room intro (`roomIntro`)
+
+A one-shot plays once on first room entry. All room stems are blocked from the scheduler until the intro finishes. A lookahead timer fires `createInstance` for every stem simultaneously at `loopStartTime`, and jumps gain from 0 → 1 on the audio clock (no ramp). Fires through a dedicated `src → g → mg` path, bypassing stem gain nodes.
+
+Config:
+```jsonc
+"roomIntro": {
+  "id": "l4_intro",      // stem ID of the one-shot (must be in stems array, no tailFade)
+  "fadeIn": 0.05,        // gain ramp at intro start (keep short)
+  "startDelay": 0,       // seconds after room entry before intro plays
+  "gapAfter": 0,         // silence after intro ends, before loops start (optional)
+  "loopAt": 20           // if set, overrides buf.duration + gapAfter — loops start exactly this many
+                         // seconds after introStartTime, regardless of audio file length
+}
+```
+
+**`loopAt` field**: added April 2026 for scene-5. When present, `loopStartTime = introStartTime + loopAt`. When absent, falls back to `introStartTime + buf.duration + gapAfter` (original behaviour, used by scene-11).
+
+**Stem must be in the `stems` array** but has no `tailFade` (it's a one-shot). The engine auto-includes it in `roomIntroIds` and never adds it to `loadedStems` or the loop scheduler.
+
+---
+
+### 5. Drone-to-loop transition — full volume, beat 1, after fade
 
 When leaving a drone-only room and entering a loop room, stems start at **full volume from bar 1** after the drone finishes fading. The delay is `audio.fadeOut` seconds (4s), matching the drone's gain ramp to silence.
 
@@ -130,7 +154,49 @@ createInstance(id, loopStartTime);
 
 ---
 
-### 5. Pending stems (loaded after setRoom)
+### 6. Drone → room-with-roomIntro priority rule
+
+**Problem discovered April 2026**: scene-4 (drone) → scene-5 (roomIntro). Both `droneExitActive` and `roomIntroActive` were true simultaneously. The drone-exit timer fired at `audio.fadeOut` (~3s) and called `createInstance` directly, starting loops during the intro.
+
+**Fix**: `willPlayRoomIntro` is computed before the drone-exit block. If a roomIntro is about to fire on first entry, the drone-exit block is skipped entirely. The roomIntro lookahead timer handles stem scheduling and gain for both cases.
+
+```js
+const willPlayRoomIntro = !!(room.roomIntro && !playedRoomIntros.has(room.id) && buf[room.roomIntro.id]);
+if (prevWasDroneOnly && room.stems.length > 0 && !willPlayRoomIntro) {
+  // drone-exit path
+}
+```
+
+On second visit (roomIntro already played), `willPlayRoomIntro = false` so drone-exit runs normally. This is correct — second-visit stems should hard-hit after the drone, with no intro.
+
+---
+
+### 7. Late-loading stems during a roomIntro (race condition)
+
+**Problem**: if a stem is still loading when `setRoom` is called, it goes into `pendingFades` instead of the silent roomIntroActive path. When it finishes loading, `loadStems` calls `scheduleImmediately` then `fadeIn`, starting the gain ramp immediately — ignoring `pendingIntroEnds` entirely. Stem becomes audible ~1s after load.
+
+**Fix**: `loadStems` now checks `pendingIntroEnds` before both `scheduleImmediately` and `fadeIn`:
+
+```js
+// Skip scheduleImmediately if blocked by roomIntro
+if (!(playedIntros.has(id) && lastInstance[id]) && !pendingIntroEnds.has(id)) {
+  scheduleImmediately(id);
+}
+if (pendingFades.has(id) && pendingFades.get(id) === currentRoomIndex) {
+  activeStems.delete(id);
+  if (pendingIntroEnds.has(id)) {
+    activeStems.add(id); // wait silently — lookahead timer handles it
+  } else {
+    fadeIn(id);
+  }
+}
+```
+
+The lookahead timer's `room.stems.forEach` loop already handles late-arrived stems: it checks `activeStems.has(id)` before creating instances, so the stem is picked up correctly at the 20s mark.
+
+---
+
+### 8. Pending stems (loaded after setRoom)
 
 If a stem isn't in `loadedStems` when `setRoom` is called, it is queued in `pendingFades` with the room index. When `loadStems` resolves it:
 
@@ -200,7 +266,7 @@ The stem joins phase-locked with stems that were already playing. It starts at t
 ## Still Needs First Listen
 
 - **`l3_drone` and `l6_drone` tailFade = 5s** — actual reverb tail length unknown until heard. Increase if crossfade sounds abrupt.
-- **Drone-to-loop transition** — implemented, not yet tested end-to-end with real tracks (scenes 4→5, 7→8).
+- **Drone-to-loop transition** — implemented, not yet tested end-to-end with real tracks (scene 7→8). Scene 4→5 now uses a roomIntro instead of a bare drone-exit.
 - **Room intro timing (scene-11)** — `startDelay: 4`, `gapAfter: 3.6`. These are estimates; tune in config after first listen.
 - **Boom stinger `atScrollRatio: 0.15`** — verify the musical moment lands at the right scroll position in scene 4.
 - **Loop crossfade** — if `[audio]` warnings appear in the browser console, the config `loop.duration` values don't match actual buffer lengths. Correct the config durations to match what the diagnostic reports.
