@@ -10,9 +10,9 @@
   "audio": {
     "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Ch1/",
     "defaultLoop": {
-      "duration": 25,
-      "bars": 13,
-      "bpm": 85,
+      "duration": 27.170,
+      "bars": 8,
+      "bpm": 53,
       "timeSignature": [3, 4]
     },
     "fadeIn": 3,
@@ -92,13 +92,13 @@
       "id": "scene-1",
       "stems": ["l1_harp", "l1_furaja"],
       "paceLock": 10,
-      "loop": { "duration": 25, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-2",
       "stems": ["l1_harp", "l1_furaja", "l1_1st_violins", "l1_2nd_violins_pizz", "l1_taikos"],
       "paceLock": 10,
-      "loop": { "duration": 25, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-3",
@@ -107,7 +107,7 @@
         "l2_furaja_ren_flutes", "l2_low_string", "l2_solo_oo", "l2_taikos"
       ],
       "paceLock": 10,
-      "loop": { "duration": 25, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-4",
@@ -120,7 +120,7 @@
       "id": "scene-5",
       "stems": ["l4_harp_dulcimer_lutes", "l4_light_percussion", "l4_ocarinas", "l4_strings"],
       "paceLock": 10,
-      "loop": { "duration": 21.316, "bars": 9, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-6",
@@ -129,7 +129,7 @@
         "l5_light_percussion", "l5_solo_oo", "l5_strings", "l5_uilleann_pipes"
       ],
       "paceLock": 10,
-      "loop": { "duration": 21.316, "bars": 9, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-7",
@@ -141,7 +141,7 @@
       "id": "scene-8",
       "stems": ["l7_low_brass_sus", "l7_heavy_perc", "l7_choir", "l7_war_horn", "l7_low_sus", "l7_uilleann_pipes"],
       "paceLock": 10,
-      "loop": { "duration": 21.316, "bars": 9, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-9",
@@ -151,13 +151,13 @@
         "l7_low_sus", "l7_psycho_trem", "l7_strings", "l7_uilleann_pipes", "l7_war_horn"
       ],
       "paceLock": 10,
-      "loop": { "duration": 21.316, "bars": 9, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-10",
       "stems": ["l8_choir", "l8_hits", "l8_light_orchestra", "l8_low_brass", "l8_uilleann_flutes", "l8_war_horn"],
       "paceLock": 10,
-      "loop": { "duration": 21.316, "bars": 9, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-11",
