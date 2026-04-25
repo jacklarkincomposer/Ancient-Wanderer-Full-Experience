@@ -177,7 +177,7 @@
         "id": "l9_oneshot",
         "fadeIn": 0.05,
         "startDelay": 3,
-        "gapAfter": 2.6
+        "gapAfter": 0.6
       }
     },
     {
