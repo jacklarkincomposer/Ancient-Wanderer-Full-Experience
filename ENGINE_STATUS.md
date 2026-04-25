@@ -32,8 +32,8 @@ These are objective, bar-aligned values. All stems in the same BPM group share t
 
 | Group | BPM | Time sig | Bars | Duration |
 |-------|-----|----------|------|----------|
-| Scenes 1–4 | 85 | 3/4 | 13 | **27.529 s** |
-| Scenes 5–10 | 76 | 3/4 | 9 | **21.316 s** |
+| Scenes 1–3 | 53 | 3/4 | 8 | **27.170 s** |
+| Scenes 5–10 | 76 | 3/4 | 8 | **18.947 s** |
 | Scenes 11–12 | 50 | 3/4 | 8 | **28.800 s** |
 
 Formula: `(60 / BPM) × beatsPerBar × bars`
@@ -151,7 +151,7 @@ The stem joins phase-locked with stems that were already playing. It starts at t
 ```jsonc
 {
   "audio": {
-    "defaultLoop": { "duration": 27.529 },   // used when room has no loop property
+    "defaultLoop": { "duration": 27.170 },   // used when room has no loop property
     "fadeIn": 3,                              // stem fade-in duration (seconds)
     "fadeOut": 4,                             // stem fade-out duration
     "masterFadeOut": 8,                       // outro master fade

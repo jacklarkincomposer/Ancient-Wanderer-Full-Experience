@@ -16,7 +16,7 @@
       "timeSignature": [3, 4]
     },
     "fadeIn": 3,
-    "fadeOut": 4,
+    "fadeOut": 3,
     "masterGain": 0.8,
     "masterFadeOut": 8,
     "scheduleAhead": 1.5,
@@ -157,7 +157,8 @@
       "id": "scene-10",
       "stems": ["l8_choir", "l8_hits", "l8_light_orchestra", "l8_low_brass", "l8_uilleann_flutes", "l8_war_horn"],
       "paceLock": 10,
-      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
+      "stingers": [{ "id": "boom", "atScrollRatio": 0.5 }]
     },
     {
       "id": "scene-11",
@@ -173,6 +174,11 @@
     },
     {
       "id": "scene-12",
+      "stems": [],
+      "paceLock": 10
+    },
+    {
+      "id": "scene-13",
       "stems": [
         "l11_choir", "l11_dulcimer_lutes", "l11_female_shouts",
         "l11_heavy_perc", "l11_low_brass", "l11_strings", "l11_uilleann_pipes"
