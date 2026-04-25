@@ -15,7 +15,7 @@
       "bpm": 53,
       "timeSignature": [3, 4]
     },
-    "fadeIn": 3,
+    "fadeIn": 4,
     "fadeOut": 3,
     "masterGain": 0.8,
     "masterFadeOut": 8,
@@ -168,14 +168,14 @@
       "roomIntro": {
         "id": "l9_oneshot",
         "fadeIn": 0.05,
-        "startDelay": 4,
-        "gapAfter": 3.6
+        "startDelay": 3,
+        "gapAfter": 2.6
       }
     },
     {
       "id": "scene-12",
       "stems": [],
-      "paceLock": 10
+      "paceLock": 0
     },
     {
       "id": "scene-13",
