@@ -10,7 +10,7 @@
   "audio": {
     "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Ch1/",
     "defaultLoop": {
-      "duration": 27.529,
+      "duration": 25,
       "bars": 13,
       "bpm": 85,
       "timeSignature": [3, 4]
@@ -92,13 +92,13 @@
       "id": "scene-1",
       "stems": ["l1_harp", "l1_furaja"],
       "paceLock": 10,
-      "loop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 25, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-2",
       "stems": ["l1_harp", "l1_furaja", "l1_1st_violins", "l1_2nd_violins_pizz", "l1_taikos"],
       "paceLock": 10,
-      "loop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 25, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-3",
@@ -107,7 +107,7 @@
         "l2_furaja_ren_flutes", "l2_low_string", "l2_solo_oo", "l2_taikos"
       ],
       "paceLock": 10,
-      "loop": { "duration": 27.529, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
+      "loop": { "duration": 25, "bars": 13, "bpm": 85, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-4",

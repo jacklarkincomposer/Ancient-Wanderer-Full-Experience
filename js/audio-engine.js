@@ -186,19 +186,15 @@ export function createAudioEngine(config) {
     }
     activeSrc.push(src);
 
+    // Fade out the previous instance of this stem — exponential decay matches natural reverb curve.
     const def = stemMap[id];
     const tailFade = def && def.tailFade != null ? def.tailFade : 3;
     const prev = lastInstance[id];
     if (prev) {
-      if (droneIds.has(id)) {
-        // Drones: crossfade so the atmospheric loop never has a hard boundary.
-        const g = prev.instGain.gain;
-        g.setValueAtTime(1, when);
-        g.exponentialRampToValueAtTime(0.0001, when + tailFade);
-        try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
-      }
-      // Loop stems: old instance plays at full gain to its natural buffer end.
-      // The new instance starts simultaneously — both run together at the loop boundary.
+      const g = prev.instGain.gain;
+      g.setValueAtTime(1, when);
+      g.exponentialRampToValueAtTime(0.0001, when + tailFade);
+      try { prev.source.stop(when + tailFade + 0.05); } catch (e) {}
     }
 
     const instance = { source: src, instGain };
