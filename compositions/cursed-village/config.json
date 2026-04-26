@@ -55,6 +55,8 @@
 
     { "id": "l6_drone", "file": "l6_Drone_2.mp3", "label": "Drone", "group": "atmosphere", "type": "drone", "tailFade": 5 },
 
+    { "id": "l7_sus_cymbal",    "file": "l7_Sus_Cymbal.mp3",        "label": "Sustained Cymbal",      "group": "percussion", "tailFade": 3 },
+    { "id": "l7_intro",         "file": "l7_intro.mp3",             "label": "Intro",                 "group": "orchestra" },
     { "id": "l7_braam_hits",    "file": "l7_Braam_Hits.mp3",        "label": "Braam Hits",            "group": "percussion", "tailFade": 1.5 },
     { "id": "l7_choir",         "file": "l7_Choir_1.mp3",           "label": "Choir",                 "group": "vocals",     "tailFade": 1.5 },
     { "id": "l7_female_shouts", "file": "l7_Female_Shouts.mp3",     "label": "Female Shouts",         "group": "vocals",     "tailFade": 1.5 },
@@ -69,6 +71,7 @@
     { "id": "l7_uilleann_pipes","file": "l7_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",        "group": "winds",      "tailFade": 1.5 },
     { "id": "l7_war_horn",      "file": "l7_War_horn.mp3",          "label": "War Horn",              "group": "brass",      "tailFade": 1.5 },
 
+    { "id": "l8_sus_cymbal",      "file": "l8_Sus_Cymbal copy.mp3",                         "label": "Sustained Cymbal",                 "group": "percussion", "tailFade": 3 },
     { "id": "l8_choir",           "file": "l8_Choir_6.mp3",                                 "label": "Choir",                            "group": "vocals",     "tailFade": 1.5 },
     { "id": "l8_hits",            "file": "l8_Hits.mp3",                                    "label": "Hits",                             "group": "percussion", "tailFade": 2 },
     { "id": "l8_light_orchestra", "file": "l8_Light_Orchestra.mp3",                         "label": "Light Orchestra",                  "group": "orchestra",  "tailFade": 5 },
@@ -147,9 +150,15 @@
     },
     {
       "id": "scene-8",
-      "stems": ["l7_low_brass_sus", "l7_heavy_perc", "l7_choir", "l7_war_horn", "l7_low_sus", "l7_uilleann_pipes"],
+      "stems": ["l7_low_brass_sus", "l7_heavy_perc", "l7_choir", "l7_war_horn", "l7_low_sus", "l7_uilleann_pipes", "l7_sus_cymbal"],
       "paceLock": 10,
-      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
+      "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
+      "roomIntro": {
+        "id": "l7_intro",
+        "fadeIn": 0.05,
+        "startDelay": 0,
+        "loopAt": 20.83
+      }
     },
     {
       "id": "scene-9",
@@ -163,7 +172,7 @@
     },
     {
       "id": "scene-10",
-      "stems": ["l8_choir", "l8_hits", "l8_light_orchestra", "l8_low_brass", "l8_uilleann_flutes", "l8_war_horn"],
+      "stems": ["l8_choir", "l8_hits", "l8_light_orchestra", "l8_low_brass", "l8_uilleann_flutes", "l8_war_horn", "l8_sus_cymbal"],
       "paceLock": 10,
       "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
       "stingers": [{ "id": "boom", "atScrollRatio": 0.5 }]

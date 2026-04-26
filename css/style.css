@@ -75,32 +75,42 @@
   #intro-modal {
     position: fixed; inset: 0; z-index: 2000;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(13,12,10,0.97); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    opacity: 1; transition: opacity 2s;
+    background: var(--ash);
+    opacity: 1;
   }
-  #intro-modal.hidden { opacity: 0; pointer-events: none; }
-  .intro-box {
-    max-width: 520px; width: 90%; padding: 3rem 3.5rem;
-    border: 1px solid var(--gold-dim);
-    background: rgba(26,23,16,0.95);
-    text-align: center; position: relative;
+  #intro-modal.hidden { opacity: 0; pointer-events: none; transition: opacity 0.8s; }
+  #intro-modal.pre-show { opacity: 0; pointer-events: none; }
+
+  .intro-box { max-width: 640px; width: 92%; text-align: center; padding: 0 1rem; }
+
+  /* Staggered reveal animations */
+  @keyframes intro-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .intro-box::before, .intro-box::after {
-    content: ''; position: absolute; width: 16px; height: 16px;
-    border-color: var(--gold); border-style: solid; opacity: 0.5;
+  @keyframes intro-widen {
+    from { width: 0; opacity: 0; }
+    to   { width: 48px; opacity: 1; }
   }
-  .intro-box::before { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
-  .intro-box::after  { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
-  .intro-eyebrow { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 1.2rem; }
-  .intro-title { font-family: 'Cinzel', serif; font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 600; color: var(--text); margin-bottom: 1.5rem; line-height: 1.2; }
-  .intro-body { font-size: 1rem; font-style: italic; color: var(--text-dim); line-height: 1.85; margin-bottom: 0.75rem; }
-  .intro-hints { display: flex; flex-direction: column; gap: 0.4rem; margin: 1.4rem 0 2rem; }
-  .intro-hint { font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
-  .intro-hint span.icon { color: var(--gold); font-size: 0.75rem; }
+  #intro-modal.is-revealed .intro-eyebrow    { animation: intro-rise   0.9s 0.1s  both; }
+  #intro-modal.is-revealed .intro-title      { animation: intro-rise   1.1s 0.45s both; }
+  #intro-modal.is-revealed .intro-divider    { animation: intro-widen  0.7s 1.1s  both; }
+  #intro-modal.is-revealed .intro-body       { animation: intro-rise   0.9s 1.4s  both; }
+  #intro-modal.is-revealed .intro-hints      { animation: intro-rise   0.9s 1.75s both; }
+  #intro-modal.is-revealed .intro-enter      { animation: intro-rise   0.9s 2.1s  both; }
+  #intro-modal.is-revealed .loading-bar-wrap { animation: intro-rise   0.9s 2.1s  both; }
+
+  .intro-eyebrow { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.45em; color: var(--gold); text-transform: uppercase; margin-bottom: 1.4rem; }
+  .intro-title { font-family: 'Cinzel', serif; font-size: clamp(2.4rem, 7vw, 4rem); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 0; }
+  .intro-divider { width: 48px; height: 1px; background: var(--gold); margin: 2rem auto; opacity: 0; }
+  .intro-body { font-size: clamp(1rem, 2.5vw, 1.15rem); font-style: italic; color: var(--text-dim); line-height: 1.9; margin-bottom: 0.75rem; }
+  .intro-hints { display: flex; flex-direction: column; gap: 0.6rem; margin: 1.4rem 0 2.4rem; }
+  .intro-hint { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
+  .intro-hint span.icon { color: var(--gold); font-size: 0.85rem; }
   .intro-enter {
-    font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.4em;
+    font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.4em;
     text-transform: uppercase; color: var(--gold);
-    border: 1px solid var(--gold-dim); padding: 0.9rem 2.4rem;
+    border: 1px solid var(--gold-dim); padding: 1rem 2.6rem;
     background: transparent; cursor: none; overflow: hidden;
     position: relative; transition: color 0.4s;
   }
@@ -118,9 +128,6 @@
     transition: width 0.4s ease;
     box-shadow: 0 0 8px rgba(201,168,76,0.5);
   }
-
-  /* Pre-show state — before audio is fetched */
-  #intro-modal.pre-show { opacity: 0; pointer-events: none; }
 
   /* Fetch progress bar (top of page, visible during background fetch) */
   #fetch-bar-wrap {
@@ -301,6 +308,12 @@
   /* ── Compositing hints ── */
   .cursor, .cursor-ring { will-change: transform; }
   #progress-bar { will-change: width; }
+
+  /* ── Particle canvas ── */
+  #particle-canvas {
+    position: fixed; inset: 0; z-index: 3;
+    pointer-events: none; will-change: contents;
+  }
 
   /* scene-12 outro: stem chart animation trigger (mirrors old #outro.outro-in-view rules) */
   #scene-12.outro-in-view .sc-fill { width: var(--w); }

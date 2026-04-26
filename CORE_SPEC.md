@@ -45,23 +45,40 @@ createInstance(id, actx.currentTime + 0.05, loopOffset % currentLoopDuration);
 
 ---
 
-## 2. Per-Instance Gain and Tail Crossfade (`audio-engine.js → createInstance`)
+## 2. Per-Instance Gain (`audio-engine.js → createInstance`)
 
 ### What it does
-Every `BufferSource` gets its own `instGain` node. When the next loop instance starts (`when`), the previous instance's `instGain` is faded out with an exponential ramp over `tailFade` seconds. The new source starts at `when`. The two sources overlap during the crossfade — this is intentional, it lets the reverb tail of the old loop decay naturally under the attack of the new one.
+Every `BufferSource` gets its own `instGain` node (`source → instGain → gain[id]`). This lets consecutive instances be faded independently without touching the shared stem `GainNode`. Behaviour differs by stem type:
+
+**Loop stems** — the baked reverb tail plays out to the buffer boundary naturally. A 50 ms linear ramp at the very end prevents a click at the hard sample boundary. There is no overlap between consecutive instances.
+
+```js
+const fadeLen = 0.05;
+g.setValueAtTime(1, prev.naturalEnd - fadeLen);
+g.linearRampToValueAtTime(0, prev.naturalEnd);
+```
+
+**Drones** — the next instance starts while the current one is still playing, producing an intentional overlap crossfade. This covers the MP3 encoder-delay gap that `src.loop = true` produces at the loop boundary. An exponential ramp fades out the previous instance.
+
+```js
+g.setValueAtTime(1, when);
+g.exponentialRampToValueAtTime(0.0001, when + tailFade);
+prev.source.stop(when + tailFade + 0.05);
+```
 
 ### Rules — never change these
 
-1. **Always use `exponentialRampToValueAtTime`, never `linearRampToValueAtTime` for instGain crossfades.**
-   Linear sounds like a splice on a reverberant tail. Exponential matches the physics of room decay.
+1. **Loop stems use a 50 ms linear click-preventer only.** Do not add a real crossfade — the baked reverb tail should play out naturally. If a crossfade is audible, it means the loop duration in config doesn't match the actual buffer length.
 
-2. **Target `0.0001`, never `0`.** The Web Audio API rejects `0` as the endpoint of an exponential ramp and throws a `RangeError`. `0.0001` is inaudible.
+2. **Drones use `exponentialRampToValueAtTime`, never `linearRampToValueAtTime`.** Linear sounds like a splice on a reverberant tail; exponential matches room decay physics.
 
-3. **Stop the old source at `when + tailFade + 0.05`**, not at `when`. Stopping it at `when` cuts the tail immediately. The `+ 0.05` safety margin prevents an edge case where the stop fires fractionally before the ramp completes.
+3. **Target `0.0001`, never `0` on exponential ramps.** The Web Audio API rejects `0` as the endpoint of an exponential ramp and throws a `RangeError`. `0.0001` is inaudible.
 
-4. **`tailFade` is read from `stemMap[id].tailFade`, defaulting to `3`** if not set. Do not hardcode a global crossfade value. Different stems have different reverb tails.
+4. **Stop the old drone source at `when + tailFade + 0.05`**, not at `when`. The `+ 0.05` safety margin prevents a race where the stop fires fractionally before the ramp completes.
 
-5. **`lastInstance[id]` must be updated to the new instance before `onended` fires.** The `onended` handler checks `if (lastInstance[id] === instance)` before nulling — this prevents a late-arriving `onended` from a previous instance from clobbering a newer one.
+5. **`tailFade` is read from `stemMap[id].tailFade`, defaulting to `3`** if not set. Do not hardcode a global value. Different stems have different reverb tails; only drones use `tailFade` for a real crossfade.
+
+6. **`lastInstance[id]` must be updated to the new instance before `onended` fires.** The `onended` handler checks `if (lastInstance[id] === instance)` before nulling — this prevents a late-arriving `onended` from clobbering a newer one.
 
 ---
 
@@ -200,11 +217,11 @@ When the outro room's top edge crosses 50% of the viewport, `outroHit` is set pe
 ## 9. Stem Loader Sliding Window (`stem-loader.js`)
 
 ### What it does
-`prepareForRoom(idx)` loads: current room stems (highest priority, awaited), next room stems, previous room stems, and any credits-transition stems if near the outro. Stems from rooms 3 or more behind are evicted.
+`prepareForRoom(idx)` loads: current room stems (highest priority, awaited), next room stems, previous room stems. Stems from rooms outside the 3-room window that are not still needed by any room in that window are evicted.
 
 ### Invariants
 
-- **Only `getUniqueStemsForRoom` stems are evicted** — stems shared with an adjacent room are not touched. Evicting a shared stem would silence a currently-playing room.
+- **Eviction is computed against the `stillNeeded` set** — the union of all stems for prev, current, and next rooms. A stem shared between room N and room N+3 is not evicted when the user is at room N+3, because it appears in `next` and therefore in `stillNeeded`. Do not tighten eviction to direct-neighbour adjacency only.
 - **Eviction threshold is `idx >= 3` → evict rooms `0` to `idx - 3`.** This keeps a 3-room buffer (prev, current, next). Tightening to 2 rooms risks evicting the previous room before a back-scroll can reload it.
 - **Current room stems are awaited before the rest.** Next/prev loads are fire-and-forget so they don't block room entry.
 - **Stinger files are included in `getStemsForRoom`** via `rooms[idx].stingers.map(s => s.id)`. They load alongside room stems so `playStinger` never has to cold-fetch in real time.
@@ -237,6 +254,39 @@ Two phases, separated by the user gesture (intro button click):
 
 ---
 
+---
+
+## 11. Outro HTML Contract
+
+`scroll-controller.js` reaches directly into the DOM when the outro room triggers. Each chapter's HTML **must** contain the following elements exactly as described — the controller does not check for their existence and will throw silently if they are missing.
+
+### Required elements inside or alongside the outro room
+
+| Selector | Required? | Purpose |
+|----------|-----------|---------|
+| `.outro-title` | Yes | Receives `revealed` class when outro triggers — drives the CSS entrance animation |
+| `.outro-sub` | Yes | Same — secondary title line |
+| `#${outroRoom.id}` (the room element itself) | Yes | Receives `outro-in-view` class — can be used for background/style changes |
+| `#chapter-btn` | Yes | The navigation button. `href` and `textContent` are set from `composition.nextChapter` and `composition.nextChapterLabel` at reveal time. Must be present even if `hidden` at page load. |
+
+### config fields that drive the outro
+
+| Field | Where | Effect |
+|-------|-------|--------|
+| `isOutro: true` | room | Marks this room as the outro gate |
+| `holdDuration` | room | Seconds to wait before master fade + button reveal. Falls back to `audio.defaultLoop.duration`. Set to a bar-aligned value. |
+| `composition.nextChapter` | top-level | Button `href` |
+| `composition.nextChapterLabel` | top-level | Button text. If absent, existing button text is unchanged. |
+
+### Invariants
+
+- **`outroHit` is a one-way latch** — once true, it never resets. The outro cannot be re-triggered by back-scrolling.
+- **`outroLock` constrains scroll within the outro room**, not to a fixed point. The user can read all content in the room but cannot scroll out of it.
+- **`navigateToNextChapter` is called only from the `#chapter-btn` click handler.** It saves volume to `sessionStorage('aw_volume')` before navigating so the next chapter can restore it.
+- **There is no auto-navigation.** After `holdDuration`, the button is revealed and the user clicks. The experience does not navigate on its own.
+
+---
+
 ## What Is Safe to Change Without This Spec
 
 - Visual styles (`ui.js`, `style.css`)
@@ -245,6 +295,7 @@ Two phases, separated by the user gesture (intro button click):
 - The `AS_SPEED` constant in `scroll-controller.js`
 - `masterGain`, `fadeIn`, `fadeOut` default values in config
 - Adding new stems or rooms to config
+- `composition.nextChapter` and `composition.nextChapterLabel` in config
 
 ## What Requires Careful Review Against This Spec
 
@@ -255,3 +306,4 @@ Two phases, separated by the user gesture (intro button click):
 - Any change to `scheduleDroneNext`
 - The order of operations in `main.js boot()`
 - Eviction logic in `stem-loader.js`
+- The outro gate sequence in `scroll-controller.js`

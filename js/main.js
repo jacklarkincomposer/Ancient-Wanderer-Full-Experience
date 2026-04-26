@@ -4,6 +4,9 @@ import { createAudioEngine } from './audio-engine.js';
 import { createStemLoader } from './stem-loader.js';
 import { createScrollController } from './scroll-controller.js';
 import { initUI } from './ui.js';
+import { initParticles } from './particles.js';
+
+initParticles();
 
 const compositionId = document.body.dataset.composition || 'cursed-village';
 const configUrl = `/compositions/${compositionId}/config.json`;
@@ -59,7 +62,9 @@ async function boot() {
 
   // Fetch done — hide fetch bar, reveal modal
   fetchBarWrap.classList.remove('active');
-  document.getElementById('intro-modal').classList.remove('pre-show');
+  const introModal = document.getElementById('intro-modal');
+  introModal.classList.remove('pre-show');
+  introModal.classList.add('is-revealed');
 
   // ── Phase 2: user clicks → AudioContext + decode + start ──
   const introBtn = document.getElementById('intro-btn');
