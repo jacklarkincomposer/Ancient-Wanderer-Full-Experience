@@ -28,9 +28,9 @@ async function boot() {
     const isMuted = engine.toggleMute();
     const b = document.getElementById('mute-btn');
     if (isMuted) {
-      b.textContent = '✕'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
+      b.textContent = 'Music Off'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
     } else {
-      b.textContent = '♪'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
+      b.textContent = 'Music On'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
     }
     ui.vis();
   });
