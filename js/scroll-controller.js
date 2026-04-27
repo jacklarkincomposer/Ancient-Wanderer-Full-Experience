@@ -178,11 +178,14 @@ export function createScrollController(config, engine, loader, ui) {
         document.getElementById(outroRoom.id).classList.add('outro-in-view');
 
         const holdMs = (outroRoom.holdDuration || config.audio.defaultLoop.duration) * 1000;
+        const btnRevealMs = outroRoom.buttonRevealAt != null
+          ? outroRoom.buttonRevealAt * 1000
+          : holdMs;
 
+        // Show button + start fade at buttonRevealAt (may be before holdDuration)
         setTimeout(() => {
           if (creditsDone) return;
           creditsDone = true;
-          outroLock = false;
           engine.fadeOutMaster();
           ui.stopVisualiser();
           const btn = document.getElementById('chapter-btn');
@@ -192,7 +195,18 @@ export function createScrollController(config, engine, loader, ui) {
             btn.classList.remove('hidden');
             btn.classList.add('revealed');
           }
-        }, holdMs);
+          const prompt = document.getElementById('chapter-prompt');
+          if (prompt) {
+            prompt.href = config.composition.nextChapter;
+            const label = prompt.querySelector('.arrow-label');
+            if (label && config.composition.nextChapterLabel) label.textContent = config.composition.nextChapterLabel;
+            document.getElementById('scroll-arrow')?.classList.remove('show');
+            prompt.classList.add('show');
+          }
+        }, btnRevealMs);
+
+        // Release scroll lock at holdDuration (after button + fade have already started)
+        setTimeout(() => { outroLock = false; }, holdMs);
       }
     }
 
@@ -250,6 +264,15 @@ export function createScrollController(config, engine, loader, ui) {
     window.addEventListener('scroll', () => {
       engine.resumeContext();
       ui.hideArrow();
+      if (creditsDone) {
+        const outroReveal = document.querySelector('.outro-reveal');
+        const prompt = document.getElementById('chapter-prompt');
+        if (outroReveal && prompt) {
+          const revealBottom = outroReveal.getBoundingClientRect().bottom;
+          const nearBottom = revealBottom > window.innerHeight - 80;
+          prompt.classList.toggle('show', !nearBottom);
+        }
+      }
       if (outroLock) {
         if (outroRoom) {
           const oe = document.getElementById(outroRoom.id);
@@ -284,10 +307,17 @@ export function createScrollController(config, engine, loader, ui) {
       }
     });
 
-    // Chapter button click — saves volume and navigates
+    // Chapter button + prompt click — saves volume and navigates
     const chapterBtn = document.getElementById('chapter-btn');
     if (chapterBtn) {
       chapterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToNextChapter(config);
+      });
+    }
+    const chapterPrompt = document.getElementById('chapter-prompt');
+    if (chapterPrompt) {
+      chapterPrompt.addEventListener('click', (e) => {
         e.preventDefault();
         navigateToNextChapter(config);
       });

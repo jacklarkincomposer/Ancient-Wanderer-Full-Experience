@@ -14,6 +14,7 @@ export function createAudioEngine(config) {
   const roomIntroIds = new Set(config.rooms.filter(r => r.roomIntro).map(r => r.roomIntro.id));
   const playedRoomIntros = new Set(); // room ids whose roomIntro has already fired
   const roomIntroTimers = {};         // roomId → setTimeout handle (cancelled on re-entry)
+  const activeRoomIntros = {};        // roomId → { src, g } for intros currently playing
   const droneExitTimers = {};         // roomId → setTimeout handle for drone-to-loop transitions
 
   let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null;
@@ -31,10 +32,11 @@ export function createAudioEngine(config) {
   stemDefs.forEach(s => { if (s.intro) introStemIds.add(s.intro); });
   const playedIntros = new Set(); // loop stem IDs whose one-shot intro has already fired this page session
   const pendingIntroEnds = new Map(); // id → Web Audio timestamp when the intro finishes, so the scheduler waits for it
+  const introLookaheadTimers = {}; // id → setTimeout handle for stem intro → loop handoff
   const droneTimers = {}; // id → setTimeout handle for drone self-rescheduling
 
-  // Map stem id → expected loop duration, built from rooms array.
-  // Used by the decode diagnostic to warn only on real mismatches.
+  // Map stem id → expected loop duration, built from the rooms that actually use the stem.
+  // First room wins (a stem reused across rooms with different loop durations is a config error).
   const stemExpectedLoop = {};
   config.rooms.forEach(r => {
     const dur = r.loop ? r.loop.duration : audio.defaultLoop.duration;
@@ -232,9 +234,13 @@ export function createAudioEngine(config) {
 
   function scheduleImmediately(id) {
     if (!schedRunning || !buf[id] || !gain[id]) return;
+    // Offset must be computed against the actual source start time, not actx.currentTime —
+    // otherwise the new stem lags 50ms behind stems already playing on the loop grid until
+    // the next scheduler generation snaps it back into phase.
+    const startWhen = actx.currentTime + 0.05;
     const loopStart = schedNext - currentLoopDuration;
-    const loopOffset = Math.max(0, actx.currentTime - loopStart);
-    createInstance(id, actx.currentTime + 0.05, loopOffset % currentLoopDuration);
+    const loopOffset = Math.max(0, startWhen - loopStart);
+    createInstance(id, startWhen, loopOffset % currentLoopDuration);
   }
 
   function schedulerTick() {
@@ -349,7 +355,8 @@ export function createAudioEngine(config) {
         // Mirrors the existing lookahead scheduler pattern: JS timer fires ~scheduleAhead seconds early,
         // then createInstance pins the exact start to the audio clock via BufferSource.start(introEndTime).
         const msUntilSchedule = Math.max(0, (loopStartTime - actx.currentTime - audio.scheduleAhead) * 1000);
-        setTimeout(() => {
+        introLookaheadTimers[id] = setTimeout(() => {
+          delete introLookaheadTimers[id];
           if (!schedRunning || !buf[id] || !gain[id]) return;
           pendingIntroEnds.delete(id);
           createInstance(id, loopStartTime);
@@ -384,10 +391,24 @@ export function createAudioEngine(config) {
     g.gain.cancelScheduledValues(now);
     g.gain.setValueAtTime(g.gain.value, now);
     g.gain.linearRampToValueAtTime(0, now + dur);
+
+    // Stop the live source after the gain ramp — otherwise it keeps playing into a silenced
+    // gain node and re-amplifies on the next fadeIn (= duplicate + out-of-phase audio on re-entry).
+    // Drones are excluded: their crossfade chain handles cleanup; force-stopping would cut the tail.
+    if (!droneIds.has(id) && lastInstance[id]) {
+      try { lastInstance[id].source.stop(now + dur + 0.05); } catch (e) {}
+    }
+
     // Cancel drone's rescheduling timer — existing instances play out and end naturally
     if (droneIds.has(id) && droneTimers[id]) {
       clearTimeout(droneTimers[id]);
       delete droneTimers[id];
+    }
+    // Cancel stem intro lookahead timer and unblock the scheduler for this stem
+    if (introLookaheadTimers[id]) {
+      clearTimeout(introLookaheadTimers[id]);
+      delete introLookaheadTimers[id];
+      pendingIntroEnds.delete(id);
     }
   }
 
@@ -401,6 +422,22 @@ export function createAudioEngine(config) {
     const entering = [];
     const exiting = [];
     const notReady = [];
+
+    // If a roomIntro is still playing from the previous room, fade it out and cancel its timer
+    if (prevRoom && activeRoomIntros[prevRoom.id]) {
+      const { src, g } = activeRoomIntros[prevRoom.id];
+      delete activeRoomIntros[prevRoom.id];
+      const now = actx.currentTime;
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(0, now + audio.fadeOut);
+      try { src.stop(now + audio.fadeOut + 0.05); } catch (e) {}
+      if (roomIntroTimers[prevRoom.id]) {
+        clearTimeout(roomIntroTimers[prevRoom.id]);
+        delete roomIntroTimers[prevRoom.id];
+      }
+      prevRoom.stems.forEach(id => pendingIntroEnds.delete(id));
+    }
 
     // Update loop duration if room has a custom loop
     if (room.loop) {
@@ -470,9 +507,11 @@ export function createAudioEngine(config) {
       g.connect(mg);
       src.start(introStartTime);
       activeSrc.push(src);
+      activeRoomIntros[room.id] = { src, g };
       src.onended = () => {
         const i = activeSrc.indexOf(src);
         if (i > -1) activeSrc.splice(i, 1);
+        delete activeRoomIntros[room.id];
         try { g.disconnect(); } catch (e) {}
       };
 
@@ -665,12 +704,12 @@ export function createAudioEngine(config) {
               return;
             }
             // Warn if buffer duration differs from the room's configured loop duration by more than 100ms.
-            // A mismatch causes the click-preventer to fire at the wrong loop point — gaps or double-hits.
-            if (!droneIds.has(id) && !roomIntroIds.has(id) && !introStemIds.has(id) && !stingerIds.has(id)) {
+            // A mismatch means the click-preventer fires at the wrong loop point — gaps, double-hits, or drift.
+            if (!droneIds.has(id)) {
               const expected = stemExpectedLoop[id];
               if (expected != null) {
                 const diff = Math.abs(buf[id].duration - expected);
-                if (diff > 0.1) console.warn(`[audio] ${id}: buffer ${buf[id].duration.toFixed(3)}s vs expected ${expected}s (Δ${diff.toFixed(3)}s) — verify config loop.duration for this room`);
+                if (diff > 0.1) console.warn(`[audio] ${id}: buffer ${buf[id].duration.toFixed(3)}s vs expected ${expected}s (Δ${diff.toFixed(3)}s) — verify the room's loop.duration matches this stem`);
               }
             }
             if (droneIds.has(id)) {
