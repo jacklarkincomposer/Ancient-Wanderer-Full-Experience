@@ -20,27 +20,32 @@ async function boot() {
 
   // Wire controls
   document.getElementById('vol').addEventListener('input', e => {
-    const wasMuted = engine.muted;
-    const isMuted = engine.setMasterGain(e.target.value);
-    if (wasMuted && !isMuted) {
-      const b = document.getElementById('mute-btn');
-      b.textContent = '\u266A'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
-    }
+    engine.setMasterGain(e.target.value);
     ui.vis();
   });
 
   document.getElementById('mute-btn').addEventListener('click', () => {
-    const isMuted = engine.toggleMute(document.getElementById('vol').value);
+    const isMuted = engine.toggleMute();
     const b = document.getElementById('mute-btn');
     if (isMuted) {
-      b.textContent = '\u2715'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
+      b.textContent = '✕'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
     } else {
-      b.textContent = '\u266A'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
+      b.textContent = '♪'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
     }
     ui.vis();
   });
 
   document.getElementById('as-btn').addEventListener('click', () => scroll.toggleAS());
+
+  document.getElementById('amb-btn').addEventListener('click', () => {
+    const isMuted = engine.toggleAmbienceMute();
+    const b = document.getElementById('amb-btn');
+    if (isMuted) {
+      b.textContent = 'SFX Off'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
+    } else {
+      b.textContent = 'SFX On'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
+    }
+  });
 
   // ── Phase 1: fetch audio in background (no AudioContext needed) ──
   const r0 = config.rooms[0];

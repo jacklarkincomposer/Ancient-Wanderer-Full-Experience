@@ -20,7 +20,8 @@
     "masterGain": 0.8,
     "masterFadeOut": 15,
     "scheduleAhead": 1.5,
-    "scheduleInterval": 200
+    "scheduleInterval": 200,
+    "soundDesignBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Sound_Design/Ch1/"
   },
   "stems": [
     { "id": "l1_harp",             "file": "l1_Harp.mp3",                                      "label": "Harp",                            "group": "strings",    "tailFade": 3 },
@@ -92,20 +93,34 @@
     { "id": "l11_heavy_perc",     "file": "l11_Heavy_Percussion_1.mp3","label": "Heavy Percussion", "group": "percussion", "tailFade": 6 },
     { "id": "l11_low_brass",      "file": "l11_Low_brass_2.mp3",       "label": "Low Brass",        "group": "brass",      "tailFade": 3 },
     { "id": "l11_strings",        "file": "l11_Strings_2.mp3",         "label": "Strings",          "group": "strings",    "tailFade": 3.5 },
-    { "id": "l11_uilleann_pipes", "file": "l11_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",   "group": "winds",      "tailFade": 3.5 }
+    { "id": "l11_uilleann_pipes", "file": "l11_Uliean_Pipes.mp3",      "label": "Uilleann Pipes",   "group": "winds",      "tailFade": 3.5 },
+
+    { "id": "amb_mountain",        "file": "Mountain_ambience_1.mp3",           "label": "Mountain Ambience",        "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_ridgeline",       "file": "Ridgeline_ambience_2.mp3",          "label": "Ridgeline Ambience",       "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_empty_village",   "file": "empty_Village_ambience_3.mp3",      "label": "Empty Village Ambience",   "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_village_people",  "file": "Village_People_ambience_4.mp3",     "label": "Village People Ambience",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_pull_centre",     "file": "Pull_at_the_centre_ambience_5.mp3", "label": "Pull Centre Ambience",     "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_monster_appears", "file": "Monster_appears_ambience_6.mp3",    "label": "Monster Appears Ambience", "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_monster_fight",   "file": "Monster_fight_ambience_7.mp3",      "label": "Monster Fight Ambience",   "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_the_fall",        "file": "The_fall_ambience_8.mp3",           "label": "The Fall Ambience",        "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_quiet_after",     "file": "Quiet_after_ambience_9.mp3",        "label": "Quiet After Ambience",     "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_sun_returns",     "file": "Sun_returns_ambience_10.mp3",       "label": "Sun Returns Ambience",     "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.7, "fadeIn": 6, "fadeOut": 6 }
   ],
   "rooms": [
     {
       "id": "scene-1",
       "stems": ["l1_harp", "l1_furaja"],
+      "drones": ["amb_mountain"],
       "paceLock": 10,
       "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-2",
       "stems": ["l1_harp", "l1_furaja", "l1_1st_violins", "l1_2nd_violins_pizz", "l1_taikos"],
+      "drones": ["amb_ridgeline"],
       "paceLock": 10,
-      "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] }
+      "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] },
+      "stingers": [{ "id": "eagle_stinger", "atScrollRatio": 0 }]
     },
     {
       "id": "scene-3",
@@ -113,20 +128,22 @@
         "l2_1st_violins", "l2_2nd_violins_pizz", "l2_dulcimer_lutes_harp",
         "l2_furaja_ren_flutes", "l2_low_string", "l2_solo_oo", "l2_taikos"
       ],
+      "drones": ["amb_ridgeline"],
       "paceLock": 10,
       "loop": { "duration": 27.170, "bars": 8, "bpm": 53, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-4",
       "stems": [],
-      "drones": ["l3_drone"],
+      "drones": ["l3_drone", "amb_empty_village"],
       "paceLock": 15,
       "stingers": [{ "id": "boom", "atScrollRatio": 0.15 }]
     },
     {
       "id": "scene-5",
       "stems": ["l4_harp_dulcimer_lutes", "l4_light_percussion", "l4_ocarinas", "l4_strings", "l4_sus_cymbal"],
-      "paceLock": 10,
+      "drones": ["amb_village_people"],
+      "paceLock": 21,
       "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
       "roomIntro": {
         "id": "l4_intro",
@@ -141,19 +158,21 @@
         "l5_harp_dulcimer_lutes", "l5_irish_whistle_ren",
         "l5_light_percussion", "l5_solo_oo", "l5_strings", "l5_uilleann_pipes", "l5_sus_cymbal"
       ],
+      "drones": ["amb_pull_centre"],
       "paceLock": 10,
       "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-7",
       "stems": [],
-      "drones": ["l6_drone"],
+      "drones": ["l6_drone", "amb_pull_centre"],
       "paceLock": 15
     },
     {
       "id": "scene-8",
       "stems": ["l7_low_brass_sus", "l7_heavy_perc", "l7_choir", "l7_war_horn", "l7_low_sus", "l7_uilleann_pipes", "l7_sus_cymbal"],
-      "paceLock": 10,
+      "drones": ["amb_monster_appears"],
+      "paceLock": 22,
       "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
       "roomIntro": {
         "id": "l7_intro",
@@ -169,19 +188,22 @@
         "l7_heavy_perc", "l7_light_perc", "l7_low_brass_stac", "l7_low_brass_sus",
         "l7_low_sus", "l7_psycho_trem", "l7_strings", "l7_uilleann_pipes", "l7_war_horn"
       ],
+      "drones": ["amb_monster_fight"],
       "paceLock": 10,
       "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] }
     },
     {
       "id": "scene-10",
       "stems": ["l8_choir", "l8_hits", "l8_light_orchestra", "l8_low_brass", "l8_uilleann_flutes", "l8_war_horn", "l8_sus_cymbal"],
+      "drones": ["amb_the_fall"],
       "paceLock": 10,
       "loop": { "duration": 18.947, "bars": 8, "bpm": 76, "timeSignature": [3, 4] },
-      "stingers": [{ "id": "boom", "atScrollRatio": 0.5 }]
+      "stingers": [{ "id": "boom", "atScrollRatio": 0.5 }, { "id": "monster_kill_stinger", "atScrollRatio": 0 }]
     },
     {
       "id": "scene-11",
       "stems": ["l10_dulcimer_lutes", "l10_strings"],
+      "drones": ["amb_quiet_after"],
       "paceLock": 55,
       "loop": { "duration": 28.8, "bars": 8, "bpm": 50, "timeSignature": [3, 4] },
       "roomIntro": {
@@ -197,7 +219,8 @@
         "l11_choir", "l11_dulcimer_lutes", "l11_female_shouts",
         "l11_heavy_perc", "l11_low_brass", "l11_strings", "l11_uilleann_pipes"
       ],
-      "paceLock": 30,
+      "drones": ["amb_sun_returns"],
+      "paceLock": 33,
       "loop": { "duration": 28.8, "bars": 8, "bpm": 50, "timeSignature": [3, 4] },
       "roomIntro": {
         "id": "l11_intro",
@@ -211,7 +234,9 @@
     }
   ],
   "stingers": [
-    { "id": "boom", "file": "Boom_Stinger.mp3", "gain": 0.9 }
+    { "id": "boom",                 "file": "Boom_Stinger.mp3",        "gain": 0.4 },
+    { "id": "eagle_stinger",        "file": "Eagle_Stinger.mp3",       "gain": 0.2, "group": "ambience" },
+    { "id": "monster_kill_stinger", "file": "Monster_kill_stinger.mp3","gain": 0.7, "group": "ambience" }
   ],
   "impacts": []
 }

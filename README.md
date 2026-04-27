@@ -31,6 +31,44 @@ Each chapter has 12 scenes with a full stem set. Scene composition, stem IDs, an
 
 ---
 
+## Scene Images
+
+Each chapter HTML page has scene `<div class="scene-frame">` containers. Six of the twelve scenes in Chapter I carry a full-bleed image; the drone/bridge scenes (2, 4, 6, 7, 9, 10) are left empty.
+
+### CDN path
+
+Images live on Cloudflare R2, served via:
+
+```
+https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch1/<filename>
+```
+
+### Chapter I image map
+
+| Scene | Scene title | Image filename |
+|-------|-------------|----------------|
+| 1 | The Rune in His Palm | `the_run_in_his_palm.png` |
+| 2 | A Curse Doesn't Announce Itself | `A_Curse_Doesn't_Announce_Itself.png` |
+| 3 | From the Ridgeline | `from_the_ridgeline.png` |
+| 4 | The First Sign Is Always the Silence | `The_first_sign_is_always _the_silence.png` |
+| 5 | The Hollow Market | `the_hollow_market.png` |
+| 8 | The Thing at the Centre | `the_thing_at_the_centre.png` |
+| 11 | The Quiet After | `the_quiet_after.png` |
+| 12 | The Sun Returns | `the_sun_returns.png` |
+
+### Replacing an image
+
+1. Upload the new file to R2 at `Ancient-Wanderer-Full-Experience-Stems/Images/Ch1/<filename>`.
+2. In `index.html`, find the target scene's `<div class="scene-frame">` and update the `src` on the `<img>` inside it. If the scene currently has no image, add one:
+
+```html
+<div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch1/your_image.png" alt="Scene Title"></div>
+```
+
+The CSS already handles the scale-in-on-scroll animation for any `img` inside `.scene-frame` — no JS or CSS changes needed.
+
+---
+
 ## File Structure
 
 ```

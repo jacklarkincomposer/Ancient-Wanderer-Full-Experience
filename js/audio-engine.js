@@ -17,8 +17,8 @@ export function createAudioEngine(config) {
   const activeRoomIntros = {};        // roomId → { src, g } for intros currently playing
   const droneExitTimers = {};         // roomId → setTimeout handle for drone-to-loop transitions
 
-  let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null;
-  let muted = false, ready = false, fadingOut = false;
+  let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null, ambienceGain = null, musicGain = null;
+  let muted = false, ambienceMuted = false, ready = false, fadingOut = false;
   const activeStems = new Set();
   const buf = {};
   const gain = {};
@@ -62,6 +62,12 @@ export function createAudioEngine(config) {
     analyserData = new Uint8Array(analyser.frequencyBinCount);
     impactGain = actx.createGain();
     impactGain.gain.value = 1;
+    ambienceGain = actx.createGain();
+    ambienceGain.gain.value = 1;
+    ambienceGain.connect(mg);
+    musicGain = actx.createGain();
+    musicGain.gain.value = 1;
+    musicGain.connect(mg);
     const limiter = actx.createDynamicsCompressor();
     limiter.threshold.value = -2;  // start limiting 2 dB below 0 — transparent in normal use
     limiter.knee.value = 2;        // slight soft knee
@@ -79,7 +85,8 @@ export function createAudioEngine(config) {
     const def = stemMap[id];
     if (!def) return null;
     try {
-      const r = await fetch(audio.cdnBase + def.file, { mode: 'cors', credentials: 'omit' });
+      const base = def.group === 'ambience' && audio.soundDesignBase ? audio.soundDesignBase : audio.cdnBase;
+      const r = await fetch(base + def.file, { mode: 'cors', credentials: 'omit' });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return await actx.decodeAudioData(await r.arrayBuffer());
     } catch (e) {
@@ -114,7 +121,8 @@ export function createAudioEngine(config) {
           if (!gain[id]) {
             const g = actx.createGain();
             g.gain.value = 0;
-            g.connect(mg);
+            const def = stemMap[id];
+            g.connect(def && def.group === 'ambience' ? ambienceGain : musicGain);
             gain[id] = g;
           }
           if (pendingFades.has(id)) {
@@ -133,7 +141,8 @@ export function createAudioEngine(config) {
           if (!gain[id]) {
             const g = actx.createGain();
             g.gain.value = 0;
-            g.connect(mg);
+            const def = stemMap[id];
+            g.connect(def && def.group === 'ambience' ? ambienceGain : musicGain);
             gain[id] = g;
           }
           // Skip scheduleImmediately if a stem-level intro is mid-play, or if a roomIntro is blocking this stem
@@ -374,11 +383,13 @@ export function createAudioEngine(config) {
       pendingFades.set(id, currentRoomIndex);
       return;
     }
-    const dur = duration != null ? duration : audio.fadeIn;
+    const def2 = stemMap[id];
+    const dur = duration != null ? duration : (def2 && def2.fadeIn != null ? def2.fadeIn : audio.fadeIn);
+    const targetGain = def2 && def2.gain != null ? def2.gain : 1;
     const now = actx.currentTime;
     g.gain.cancelScheduledValues(now);
     g.gain.setValueAtTime(g.gain.value, now);
-    g.gain.linearRampToValueAtTime(1, now + dur);
+    g.gain.linearRampToValueAtTime(targetGain, now + dur);
   }
 
   function fadeOut(id, duration) {
@@ -386,7 +397,8 @@ export function createAudioEngine(config) {
     activeStems.delete(id);
     const g = gain[id];
     if (!g) return;
-    const dur = duration != null ? duration : audio.fadeOut;
+    const def = stemMap[id];
+    const dur = duration != null ? duration : (def && def.fadeOut != null ? def.fadeOut : audio.fadeOut);
     const now = actx.currentTime;
     g.gain.cancelScheduledValues(now);
     g.gain.setValueAtTime(g.gain.value, now);
@@ -497,14 +509,14 @@ export function createAudioEngine(config) {
         ? introStartTime + intro.loopAt
         : introStartTime + buf[intro.id].duration + gapAfter;
 
-      // Play the one-shot through a dedicated source → g → mg path
+      // Play the one-shot through a dedicated source → g → musicGain path
       const src = actx.createBufferSource();
       src.buffer = buf[intro.id];
       const g = actx.createGain();
       g.gain.setValueAtTime(0, introStartTime);
       g.gain.linearRampToValueAtTime(1, introStartTime + introFadeIn);
       src.connect(g);
-      g.connect(mg);
+      g.connect(musicGain);
       src.start(introStartTime);
       activeSrc.push(src);
       activeRoomIntros[room.id] = { src, g };
@@ -597,24 +609,26 @@ export function createAudioEngine(config) {
     mg.gain.cancelScheduledValues(now);
     mg.gain.setValueAtTime(mg.gain.value, now);
     mg.gain.linearRampToValueAtTime(parseFloat(v), now + 0.05);
-    if (parseFloat(v) > 0 && muted) {
-      muted = false;
-    }
-    return muted;
   }
 
-  function toggleMute(sliderValue) {
+  function toggleMute() {
     if (!actx) return muted;
     muted = !muted;
     const now = actx.currentTime;
-    mg.gain.cancelScheduledValues(now);
-    mg.gain.setValueAtTime(mg.gain.value, now);
-    if (muted) {
-      mg.gain.linearRampToValueAtTime(0, now + 0.5);
-    } else {
-      mg.gain.linearRampToValueAtTime(parseFloat(sliderValue), now + 0.5);
-    }
+    musicGain.gain.cancelScheduledValues(now);
+    musicGain.gain.setValueAtTime(musicGain.gain.value, now);
+    musicGain.gain.linearRampToValueAtTime(muted ? 0 : 1, now + 0.5);
     return muted;
+  }
+
+  function toggleAmbienceMute() {
+    if (!actx) return ambienceMuted;
+    ambienceMuted = !ambienceMuted;
+    const now = actx.currentTime;
+    ambienceGain.gain.cancelScheduledValues(now);
+    ambienceGain.gain.setValueAtTime(ambienceGain.gain.value, now);
+    ambienceGain.gain.linearRampToValueAtTime(ambienceMuted ? 0 : 1, now + 0.5);
+    return ambienceMuted;
   }
 
   function fadeOutMaster(duration) {
@@ -673,7 +687,8 @@ export function createAudioEngine(config) {
       const def = stemMap[id];
       if (!def) return;
       try {
-        const r = await fetch(audio.cdnBase + def.file, { mode: 'cors', credentials: 'omit' });
+        const base = def.group === 'ambience' && audio.soundDesignBase ? audio.soundDesignBase : audio.cdnBase;
+        const r = await fetch(base + def.file, { mode: 'cors', credentials: 'omit' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         prefetchedBuffers[id] = await r.arrayBuffer();
       } catch (e) {
@@ -718,7 +733,8 @@ export function createAudioEngine(config) {
               if (!gain[id]) {
                 const g = actx.createGain();
                 g.gain.value = 0;
-                g.connect(mg);
+                const def = stemMap[id];
+                g.connect(def && def.group === 'ambience' ? ambienceGain : musicGain);
                 gain[id] = g;
               }
               stemLoadedCallbacks.forEach(cb => cb(id));
@@ -728,7 +744,8 @@ export function createAudioEngine(config) {
             if (!gain[id]) {
               const g = actx.createGain();
               g.gain.value = 0;
-              g.connect(mg);
+              const def = stemMap[id];
+              g.connect(def && def.group === 'ambience' ? ambienceGain : musicGain);
               gain[id] = g;
             }
             scheduleImmediately(id);
@@ -771,6 +788,7 @@ export function createAudioEngine(config) {
     fadeOutMaster,
     setMasterGain,
     toggleMute,
+    toggleAmbienceMute,
     getAnalyser: () => analyser,
     getAnalyserData: () => analyserData,
     getContext: () => actx,
@@ -786,6 +804,7 @@ export function createAudioEngine(config) {
     get ready() { return ready; },
     set ready(v) { ready = v; },
     get muted() { return muted; },
+    get ambienceMuted() { return ambienceMuted; },
     get fadingOut() { return fadingOut; },
     get schedRunning() { return schedRunning; },
   };
