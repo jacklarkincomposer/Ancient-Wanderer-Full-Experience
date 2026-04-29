@@ -11,6 +11,32 @@ initParticles();
 const compositionId = document.body.dataset.composition || 'cursed-village';
 const configUrl = `/compositions/${compositionId}/config.json`;
 
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runCinematic(engine) {
+  const overlay  = document.getElementById('cinematic-intro');
+  const textWrap = overlay.querySelector('.cin-text-wrap');
+
+  overlay.classList.add('cin-active');
+  await delay(1200);
+
+  textWrap.classList.add('cin-visible');
+  await delay(9000);
+
+  textWrap.style.transition = 'opacity 2.5s ease, transform 2.5s ease';
+  textWrap.classList.remove('cin-visible');
+  await delay(4500);
+
+  engine.setRoom(0);
+  engine.startScheduler();
+
+  overlay.style.transition = 'opacity 4s ease';
+  overlay.classList.remove('cin-active');
+  await delay(4500);
+
+  document.getElementById('controls').classList.remove('cin-ui-hidden');
+}
+
 async function boot() {
   const config = await fetch(configUrl).then(r => r.json());
   const engine = createAudioEngine(config);
@@ -97,9 +123,15 @@ async function boot() {
 
     engine.ready = true;
     ui.closeModal();
-    engine.setRoom(0);
+
+    if (compositionId === 'cursed-village') {
+      await runCinematic(engine);
+    } else {
+      engine.setRoom(0);
+      engine.startScheduler();
+    }
+
     ui.updateStemIndicators(engine);
-    engine.startScheduler();
     scroll.startLock(0);
     scroll.start();
     document.body.classList.remove('scroll-locked');
