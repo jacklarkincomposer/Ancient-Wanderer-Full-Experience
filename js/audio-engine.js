@@ -28,6 +28,7 @@ export function createAudioEngine(config) {
   const pendingFades = new Map();
   const stemLoadedCallbacks = [];
   const lastInstance = {}; // id → { source, instGain } — tracks the most recent BufferSource per stem for tail crossfade
+  const stemAnalysers = {}; // id → AnalyserNode (parallel tap for per-stem level metering)
   const introStemIds = new Set(); // stem IDs that serve as intro variants (referenced by another stem's .intro field)
   stemDefs.forEach(s => { if (s.intro) introStemIds.add(s.intro); });
   const playedIntros = new Set(); // loop stem IDs whose one-shot intro has already fired this page session
@@ -183,6 +184,10 @@ export function createAudioEngine(config) {
       if (gain[id]) {
         gain[id].disconnect();
         delete gain[id];
+      }
+      if (stemAnalysers[id]) {
+        try { stemAnalysers[id].disconnect(); } catch (e) {}
+        delete stemAnalysers[id];
       }
       delete buf[id];
       loadedStems.delete(id);
@@ -382,6 +387,12 @@ export function createAudioEngine(config) {
       // Not loaded yet — queue for later
       pendingFades.set(id, currentRoomIndex);
       return;
+    }
+    if (!stemAnalysers[id]) {
+      const a = actx.createAnalyser();
+      a.fftSize = 1024;
+      g.connect(a); // parallel tap — doesn't interrupt existing signal chain
+      stemAnalysers[id] = a;
     }
     const def2 = stemMap[id];
     const dur = duration != null ? duration : (def2 && def2.fadeIn != null ? def2.fadeIn : audio.fadeIn);
@@ -789,6 +800,18 @@ export function createAudioEngine(config) {
     setMasterGain,
     toggleMute,
     toggleAmbienceMute,
+    getStemLevel(id) {
+      const a = stemAnalysers[id];
+      if (!a) return 0;
+      const buf2 = new Uint8Array(a.fftSize);
+      a.getByteTimeDomainData(buf2);
+      let sum = 0;
+      for (let i = 0; i < buf2.length; i++) {
+        const v = (buf2[i] - 128) / 128;
+        sum += v * v;
+      }
+      return Math.sqrt(sum / buf2.length);
+    },
     getAnalyser: () => analyser,
     getAnalyserData: () => analyserData,
     getContext: () => actx,

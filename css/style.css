@@ -38,10 +38,9 @@
   }
 
   .stem-indicators { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
-  .stem-dot { display: flex; align-items: center; gap: 9px; opacity: 0.2; transition: opacity 0.7s; }
-  .stem-dot.active { opacity: 1; }
-  .stem-dot span { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.15em; color: var(--text-dim); text-transform: uppercase; }
-  .stem-dot.active span { color: var(--gold); }
+  .stem-dot { display: none; align-items: center; gap: 9px; }
+  .stem-dot.active { display: flex; }
+  .stem-dot span { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold-dim); transition: background 0.7s, box-shadow 0.7s; flex-shrink: 0; }
   .stem-dot.active .dot { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 
@@ -156,7 +155,7 @@
   .arrow-chevron { width: 26px; height: 26px; border-right: 1px solid var(--gold); border-bottom: 1px solid var(--gold); transform: rotate(45deg); margin-top: -6px; animation: bounce 1.8s ease-in-out infinite; opacity: 0.85; }
   @keyframes bounce { 0%,100%{transform:translateY(0) rotate(45deg)} 50%{transform:translateY(5px) rotate(45deg)} }
 
-  #visualiser { position: fixed; bottom: 0; left: 6%; right: 6%; height: 40px; z-index: 400; pointer-events: none; display: flex; align-items: flex-end; justify-content: stretch; gap: 1px; padding: 0 0 3px; opacity: 0; transition: opacity 0.5s; }
+  #visualiser { position: fixed; bottom: 0; left: 0; right: 0; height: 40px; z-index: 400; pointer-events: none; display: flex; align-items: flex-end; justify-content: stretch; gap: 1px; padding: 0 0 3px; opacity: 0; transition: opacity 0.5s; -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%); }
   #visualiser.active { opacity: 0.4; filter: drop-shadow(0 0 6px rgba(201,168,76,0.5)); }
   .vb { flex: 1; min-width: 0; background: var(--gold); border-radius: 1px 1px 0 0; }
 
@@ -233,8 +232,7 @@
   .sc-row { display: flex; align-items: center; gap: 0.75rem; }
   .sc-lbl { font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); width: 95px; flex-shrink: 0; }
   .sc-track { flex: 1; height: 1px; background: rgba(255,255,255,0.07); position: relative; }
-  .sc-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(to right, var(--gold-dim), var(--gold)); width: 0; transition: width 1.8s ease; }
-  .scene.in-view .sc-fill { width: var(--w); }
+  .sc-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(to right, var(--gold-dim), var(--gold)); width: 0; }
   .sc-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-dim); flex-shrink: 0; transition: background 0.6s, box-shadow 0.6s; }
   .scene.in-view .sc-pip { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
 
@@ -270,7 +268,6 @@
   #chapter-prompt.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
   /* Outro stem chart — uses .outro-in-view instead of .scene.in-view */
-  #outro.outro-in-view .sc-fill { width: var(--w); }
   #outro.outro-in-view .sc-pip { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
 
   /* ── Credits ── */
@@ -326,7 +323,6 @@
   }
 
   /* scene-12 outro: stem chart animation trigger (mirrors old #outro.outro-in-view rules) */
-  #scene-12.outro-in-view .sc-fill { width: var(--w); }
   #scene-12.outro-in-view .sc-pip { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
 
   /* Container for outro title/sub inside scene-12 */

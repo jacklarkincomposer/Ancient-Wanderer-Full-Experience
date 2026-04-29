@@ -8,25 +8,363 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap">
-<style>
-  :root { --gold: #c9a84c; --ash: #0d0c0a; --text: #d4c9a8; --text-dim: #7a7060; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--ash); color: var(--text); font-family: 'Cormorant Garamond', serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
-  .box { max-width: 480px; }
-  .eyebrow { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 1.5rem; }
-  h1 { font-family: 'Cinzel', serif; font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; line-height: 1.05; color: var(--text); margin-bottom: 1rem; }
-  h1 em { display: block; font-style: italic; font-weight: 400; color: var(--gold); font-size: 0.45em; letter-spacing: 0.1em; margin-top: 0.3em; }
-  p { font-style: italic; color: var(--text-dim); line-height: 1.8; font-size: 1rem; margin-top: 1.5rem; }
-  a { color: var(--gold); text-decoration: none; font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; display: inline-block; margin-top: 2rem; border: 1px solid rgba(201,168,76,0.3); padding: 0.8rem 2rem; transition: border-color 0.3s; }
-  a:hover { border-color: var(--gold); }
-</style>
+<link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  <div class="box">
-    <p class="eyebrow">The Ancient Wanderer</p>
-    <h1>Chapter II<em>The Forge Village</em></h1>
-    <p>Coming soon.</p>
-    <a href="/">← Return to Chapter I</a>
+<body class="scroll-locked" data-composition="forge-village">
+
+<!-- Intro modal — single entry point, triggers audio -->
+<div id="intro-modal" class="pre-show">
+  <div class="intro-box">
+    <p class="intro-eyebrow">An Audiovisual Experience</p>
+    <h2 class="intro-title">The Ancient Wanderer</h2>
+    <div class="intro-divider"></div>
+    <p class="intro-body">A wanderer leaves the village he saved and walks north toward forge smoke. As you scroll, the music grows from sparse harp and Birbyne into the heat and weight of a working forge, and finally into a 4/4 chase through stone streets — all the way to the trees, and the rune in his hand.</p>
+    <div class="intro-hints">
+      <div class="intro-hint"><span class="icon">↕</span> Scroll to move through the world</div>
+      <div class="intro-hint"><span class="icon">⏳</span> Each section asks you to pause and listen</div>
+      <div class="intro-hint"><span class="icon">♪</span> Use headphones for the full experience</div>
+    </div>
+    <button class="intro-enter" id="intro-btn" aria-label="Enter the experience and begin audio playback">Enter the World</button>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar" id="loading-bar"></div>
+    </div>
   </div>
+</div>
+
+<!-- Scroll arrow -->
+<div id="scroll-arrow">
+  <span class="arrow-label">Continue</span>
+  <div class="arrow-chevron"></div>
+</div>
+
+<!-- Chapter III prompt — shown at outro, mirrors scroll-arrow style -->
+<a id="chapter-prompt" class="chapter-prompt" href="#" aria-label="Begin Chapter III">
+  <span class="arrow-label">Begin Chapter III</span>
+  <div class="arrow-chevron"></div>
+</a>
+
+<div class="cursor" id="cursor"></div>
+<div id="progress-bar"></div>
+<div id="fetch-bar-wrap"><div id="fetch-bar"></div></div>
+<div id="notification"></div>
+<div id="pace-lock"></div>
+<div id="pace-warning">Scrolling too fast</div>
+<div id="visualiser"></div>
+
+<!-- Controls -->
+<div id="controls">
+  <div class="stem-indicators"></div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="as-btn" aria-pressed="false">Auto Scroll</button>
+    <button class="ctrl-btn" id="mute-btn" aria-label="Toggle music" aria-pressed="false">Music On</button>
+    <button class="ctrl-btn" id="amb-btn" aria-label="Toggle sound design" aria-pressed="false">SFX</button>
+  </div>
+  <div id="volume-wrap">
+    <label for="vol">Vol</label>
+    <input type="range" id="vol" min="0" max="1" step="0.01" value="0.8" aria-label="Master volume">
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <svg class="ruins-svg" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <path d="M0,200 L0,160 L40,160 L40,120 L60,120 L60,80 L80,80 L80,60 L100,60 L100,80 L120,80 L120,120 L140,120 L140,160 L180,160 L180,140 L200,140 L200,100 L220,100 L220,60 L240,60 L240,40 L260,40 L260,60 L280,60 L280,100 L300,100 L300,140 L340,140 L340,160 L400,160 L400,130 L420,130 L420,90 L440,70 L460,90 L460,130 L480,130 L480,160 L560,160 L560,140 L580,140 L580,100 L600,80 L620,80 L620,50 L640,50 L640,30 L660,30 L660,50 L680,50 L680,80 L700,80 L700,100 L720,100 L720,140 L740,140 L740,160 L800,160 L800,120 L820,120 L820,80 L840,80 L840,60 L860,40 L880,60 L880,80 L900,80 L900,120 L920,120 L920,160 L980,160 L980,140 L1000,140 L1000,100 L1020,70 L1040,100 L1040,140 L1060,140 L1060,160 L1120,160 L1120,130 L1140,130 L1140,90 L1160,90 L1160,60 L1180,60 L1180,40 L1200,40 L1200,60 L1220,60 L1220,90 L1240,90 L1240,130 L1260,130 L1260,160 L1320,160 L1320,140 L1340,140 L1340,120 L1360,120 L1360,160 L1400,160 L1440,160 L1440,200 Z" fill="rgba(201,168,76,0.08)"/>
+    <circle cx="300" cy="40" r="1" fill="rgba(201,168,76,0.6)"/>
+    <circle cx="750" cy="20" r="1.5" fill="rgba(201,168,76,0.8)"/>
+    <circle cx="1100" cy="30" r="1" fill="rgba(201,168,76,0.5)"/>
+    <circle cx="500" cy="15" r="1" fill="rgba(201,168,76,0.4)"/>
+    <circle cx="900" cy="10" r="2" fill="rgba(201,168,76,0.6)"/>
+  </svg>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+    <p class="hero-eyebrow">Chapter II — The Forge Village</p>
+    <h1 class="hero-title">The Ancient<em>Wanderer</em></h1>
+    <p class="hero-sub">Coal smoke and hot metal. A rune on a shelf.<br>A chase through stone streets, and the trees beyond.</p>
+    <div class="hero-rule"><div class="rl"></div><span>✦ ✦ ✦</span><div class="rl r"></div></div>
+  </div>
+</section>
+
+<!-- SCENE 1 -->
+<div class="scene" id="scene-1">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S1.png" alt="He Doesn't Look Back"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Sparse · Departure</p>
+      <h2 class="scene-title">He Doesn't Look Back</h2>
+      <p class="traveller-line">"The aftermath is not for him."</p>
+      <p class="scene-text">He doesn't stay for what comes next. He has learned, over time, that the aftermath is not for him — the confusion and the grief and the slow piecing together of what happened belongs to the people it happened to. His presence in it would only complicate things.</p>
+      <p class="scene-text">Behind him he can hear the village waking up. Voices — real ones this time, with weight and confusion and feeling behind them. Someone calling a name. Someone else answering. He doesn't look back.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Harp</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Vibraphone</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 2 -->
+<div class="scene" id="scene-2">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S2.png" alt="Forge Smoke on the Ridge"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Walking · Northward</p>
+      <h2 class="scene-title">Forge Smoke on the Ridge</h2>
+      <p class="traveller-line">"A settlement. That will do."</p>
+      <p class="scene-text">He thinks he saw forge smoke from the ridge, to the north. A settlement. That will do.</p>
+      <p class="scene-text">He picks up his broken sword, sheathes it, and walks toward the gate. The Birbyne and the Shepard flute step in over the harp; a quiet choir gathers behind the strings as the road begins.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Harp</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Vibraphone</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Birbyne + Shepard</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 3 -->
+<div class="scene" id="scene-3">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S3.png" alt="First Sight of the Forge Village"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Heat · Arrival</p>
+      <h2 class="scene-title">First Sight of the Forge Village</h2>
+      <p class="traveller-line">"After the silence of the cursed village this feels like breathing again."</p>
+      <p class="scene-text">He smells the settlement before he sees it — coal smoke and hot metal and the particular sharpness of quenched steel. Then he crests the hill and there it is below him, built into the hillside like it grew there, heavy Norse stone and iron and the glow of a dozen forges burning orange in the grey afternoon.</p>
+      <p class="scene-text">He can hear it from up here. Hammers and voices and the hiss of steam. Life, actual life, going about its business without anything wrong underneath it. He starts down the hill.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Birbyne</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Harp + Vibraphone</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">War Horn</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Heavy Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Anvil</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 4 -->
+<div class="scene" id="scene-4">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S4.png" alt="A Place Too Busy to Worry"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Bustle · Full Forge</p>
+      <h2 class="scene-title">A Place Too Busy to Worry</h2>
+      <p class="traveller-line">"A cloaked traveller with a blade to repair is not an unusual sight in a place like this."</p>
+      <p class="scene-text">The forge settlement has the particular energy of a place that has always been too busy to worry about anything beyond the next order. People move with purpose here. They argue over prices and shout across the street at each other and laugh at jokes he doesn't catch. Nobody looks at him twice.</p>
+      <p class="scene-text">He finds the smith by reputation, asking twice and following pointed directions through two narrow streets and down a set of stone steps into a workshop built low into the hill, warm and loud and smelling of iron.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Harp + Pizz</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Lutes</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir + Strings</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Stac. Solo Violin</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">War Horn + Low Brass</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Heavy Perc + Anvil</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 5 -->
+<div class="scene" id="scene-5">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S5.png" alt="An Hour"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Stripped · Waiting</p>
+      <h2 class="scene-title">An Hour</h2>
+      <p class="traveller-line">"He pays without negotiating. The smith seems almost disappointed by this."</p>
+      <p class="scene-text">He lays the blade on the workbench without ceremony. The smith picks it up, turns it over, runs a thumb along the damaged edge with the practiced indifference of someone who has seen a thousand damaged blades and found most of them less interesting than their owners believed.</p>
+      <p class="scene-text">The smith names a price. The Wanderer pays it without negotiating. The smith says it will be an hour. The Wanderer nods and sits down on a low bench by the wall to wait.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Harp + Pizz</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Lutes</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">War Horn</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Small Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Heavy Perc</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Anvil</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 6 -->
+<div class="scene" id="scene-6">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S6.png" alt="The Rune on the Shelf"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Recognition · Quiet</p>
+      <h2 class="scene-title">The Rune on the Shelf</h2>
+      <p class="traveller-line">"He recognises it immediately. He has no word for what it is. He has never needed one."</p>
+      <p class="scene-text">That is when he sees it. On the shelf behind the smith, between a pair of iron tongs and a collection of small decorative metalwork pieces, sits a rune. The carved stone, the central symbol, the circle of pictograms around the edge — glowing faintly red in the firelight.</p>
+      <p class="scene-text">Beside it, a hand-lettered price sign. The number written on it is large enough that he reads it twice. Someone found this. Didn't know what it was. Sold it to a curiosity collector. And it has been sitting on this shelf ever since, glowing quietly, pointing toward someone who needs help and going nowhere.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Harp + Vibraphone</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Strings + Celli</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">2nd Violins</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">War Horn</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Atmosphere</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 7 -->
+<div class="scene" id="scene-7">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S7.png" alt="He Is Not a Man Who Struggles With Decisions"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Decision · Stillness</p>
+      <h2 class="scene-title">He Is Not a Man Who Struggles With Decisions</h2>
+      <p class="traveller-line">"The smith values it as an object. He needs it as a key."</p>
+      <p class="scene-text">He waits. The smith works the blade at the far end of the bench, back turned, focused entirely on the steel. The rune sits on the shelf. The Wanderer sits on the bench. The fire pops and hisses.</p>
+      <p class="scene-text">Someone is waiting for that rune. Possibly has been waiting for it for however long it has been sitting on this shelf. The smith values it as an object. He needs it as a key. The smith turns back to the grindstone.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Celli</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">2nd Violins</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Atmosphere</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 8 — 4/4 @ 145 BPM, the chase begins -->
+<div class="scene" id="scene-8">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S8.png" alt="Two Seconds"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Pulse · Theft</p>
+      <h2 class="scene-title">Two Seconds</h2>
+      <p class="traveller-line">"They simply look at each other. Then he is already moving."</p>
+      <p class="scene-text">He moves quickly. Hand across the bench, fingers around the stone, into the cloak. Done. The smith turns around.</p>
+      <p class="scene-text">There is a moment — maybe two seconds — where they simply look at each other. Then the smith looks at the shelf. Then back at him. Then opens his mouth. He is already moving.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Accordion</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 9 — chase peak -->
+<div class="scene" id="scene-9">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S9.png" alt="Not Dignified"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Chase · Full Pursuit</p>
+      <h2 class="scene-title">Not Dignified</h2>
+      <p class="traveller-line">"Extremely good at leaving places in a hurry."</p>
+      <p class="scene-text">The chase through the forge settlement is not dignified. He runs through the narrow stone streets with the smith's voice behind him raising the alarm, past workers who turn to look and then dive aside, past a cart that tips as he rounds a corner too fast, past two guards who are too slow off the mark.</p>
+      <p class="scene-text">He takes a set of steps three at a time, ducks through an arch, breaks left onto a wider street and then immediately right into an alley, through a gap between two buildings that a broader man couldn't manage, and suddenly he is outside the settlement entirely, on open ground, the sounds of pursuit already fading behind him.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Perc + Toms</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Accordion</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:90%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Medium Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Lutes</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">High Strings</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Perc 2</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 10 — outro, isOutro: true, holdDuration ~52.97s, navigates to /chapter3 -->
+<div class="scene" id="scene-10">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch2/S10.png" alt="He Opens His Hand"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Forest · The Rune</p>
+      <h2 class="scene-title">He Opens His Hand</h2>
+      <p class="traveller-line">"He has left things in worse places."</p>
+      <p class="scene-text">He walks into the trees and keeps walking until the forge settlement is gone entirely and there is only forest around him, old growth, the kind that has been here long enough to stop caring about the noise of men.</p>
+      <p class="scene-text">He stops. Catches his breath — more ragged than he would like, a reminder that the fight in the cursed village cost him more than he has been willing to admit. The sword is still on the smith's workbench. He won't be going back for it. He has left things in worse places. He opens his hand and looks at the rune.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Perc</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Perc 2</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Accordion</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Outro reveal — animated in by scroll-controller when isOutro triggers -->
+  <div class="outro-reveal">
+    <p class="outro-title">To be continued</p>
+    <p class="outro-sub">Chapter III</p>
+    <a id="chapter-btn" class="chapter-btn hidden" href="#">Begin Chapter III →</a>
+  </div>
+</div>
+
+<!-- CREDITS — failsafe only, never shown during normal chapter navigation -->
+<section id="credits">
+  <p class="credits-hl">The Ancient Wanderer</p>
+  <p class="credits-body">
+    Chapter II — The Forge Village<br>
+    An Original Composition<br>
+    Jack Larkin · 2026<br><br>
+    <em>All worlds, motifs, and journeys fictional.</em>
+  </p>
+</section>
+
+<footer id="site-footer">
+  <span class="footer-divider">✦</span>
+  <a class="footer-name" href="https://jacklarkincomposer.co.uk" target="_blank" rel="noopener">Jack Larkin</a>
+  <nav class="footer-links" aria-label="Social links">
+    <a href="https://www.youtube.com/@Jacklarkincomposer" target="_blank" rel="noopener">YouTube</a>
+    <a href="https://soundcloud.com/jacklarkincomposer" target="_blank" rel="noopener">SoundCloud</a>
+    <a href="https://www.instagram.com/jacklarkincomposer/" target="_blank" rel="noopener">Instagram</a>
+    <a href="mailto:jacklarkincomposer@gmail.com">Email</a>
+  </nav>
+  <p class="footer-copy">© Jack Larkin 2026</p>
+</footer>
+
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>

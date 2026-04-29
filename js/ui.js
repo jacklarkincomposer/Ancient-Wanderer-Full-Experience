@@ -56,6 +56,29 @@ export function initUI(config, engine) {
     });
   }
 
+  // ── Stem chart rows — generated from config, one row per musical stem ──
+  const stemMap = Object.fromEntries(config.stems.map(s => [s.id, s]));
+  config.rooms.forEach(room => {
+    const chart = document.querySelector('#' + room.id + ' .stem-chart');
+    if (!chart) return;
+    chart.querySelectorAll('.sc-row').forEach(r => r.remove());
+    room.stems.forEach(id => {
+      const stem = stemMap[id];
+      if (!stem) return;
+      const row = document.createElement('div');
+      row.className = 'sc-row';
+      row.dataset.stemId = id;
+      row.innerHTML = `<span class="sc-lbl">${stem.label}</span><div class="sc-track"><div class="sc-fill"></div></div><div class="sc-pip"></div>`;
+      chart.appendChild(row);
+    });
+    if (room.stems.length === 0 && room.drones && room.drones.length > 0) {
+      const row = document.createElement('div');
+      row.className = 'sc-row';
+      row.innerHTML = '<span class="sc-lbl">Drone</span><div class="sc-track"><div class="sc-fill sc-fill--drone"></div></div><div class="sc-pip"></div>';
+      chart.appendChild(row);
+    }
+  });
+
   // ── Visualiser ──
   const ve = document.getElementById('visualiser');
   const VIS_BARS = 220;
@@ -90,7 +113,8 @@ export function initUI(config, engine) {
       const bassRolloff = Math.pow(t, 0.4);
       const emphasis = (0.3 + 1.1 * t) * (0.4 + 0.6 * bassRolloff);
       const bellEnv = 0.3 + 0.7 * Math.sin(t * Math.PI);
-      vb[i].style.height = Math.max(2, Math.min(raw * emphasis, 1) * 36 * bellEnv) + 'px';
+      const shaped = Math.pow(Math.min(raw * emphasis, 1), 1.7);
+      vb[i].style.height = Math.max(2, shaped * 44 * bellEnv) + 'px';
     }
     visRaf = requestAnimationFrame(visLoop);
   }
@@ -109,6 +133,33 @@ export function initUI(config, engine) {
   function stopVisualiser() {
     if (ve) ve.classList.remove('active');
     if (visRaf) { cancelAnimationFrame(visRaf); visRaf = null; }
+    if (meterRaf) { cancelAnimationFrame(meterRaf); meterRaf = null; }
+  }
+
+  // ── Per-stem gain meter ──
+  let meterRaf = null;
+  const meterRows = document.querySelectorAll('.sc-row[data-stem-id]');
+  const meterSmoothed = new Map();
+
+  function meterLoop() {
+    meterRows.forEach(row => {
+      const fill = row.querySelector('.sc-fill');
+      if (!fill) return;
+      const id = row.dataset.stemId;
+      const raw = engine.getStemLevel(id);
+      const prev = meterSmoothed.get(id) || 0;
+      // Fast attack, slow decay — avoids jitter while keeping peaks responsive
+      const alpha = raw > prev ? 0.55 : 0.90;
+      const s = prev * alpha + raw * (1 - alpha);
+      meterSmoothed.set(id, s);
+      const curved = Math.pow(Math.min(s * 4, 1), 0.4);
+      fill.style.width = (curved * 100) + '%';
+    });
+    meterRaf = requestAnimationFrame(meterLoop);
+  }
+
+  function startMeter() {
+    if (!meterRaf) meterRaf = requestAnimationFrame(meterLoop);
   }
 
   // ── Notifications ──
@@ -153,6 +204,7 @@ export function initUI(config, engine) {
       }
     });
     vis();
+    startMeter();
   }
 
   function closeModal() {
@@ -167,5 +219,6 @@ export function initUI(config, engine) {
     updateStemIndicators,
     closeModal,
     stopVisualiser,
+    startMeter,
   };
 }

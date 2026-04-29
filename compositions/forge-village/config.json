@@ -1,0 +1,184 @@
+{
+  "composition": {
+    "id": "forge-village",
+    "title": "The Ancient Wanderer",
+    "subtitle": "Chapter II — The Forge Village",
+    "composer": "Jack Larkin",
+    "nextChapter": "https://ancientwanderer.jacklarkincomposer.co.uk/chapter3",
+    "nextChapterLabel": "Begin Chapter III →"
+  },
+  "audio": {
+    "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Ch2/",
+    "soundDesignBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Sound_Design/Ch2/",
+    "defaultLoop": {
+      "duration": 24.000,
+      "bars": 16,
+      "bpm": 120,
+      "timeSignature": [3, 4]
+    },
+    "fadeIn": 4,
+    "fadeOut": 3,
+    "masterGain": 0.8,
+    "masterFadeOut": 15,
+    "scheduleAhead": 1.5,
+    "scheduleInterval": 200
+  },
+  "stems": [
+    { "id": "l1_harp",             "file": "l1_Harp.mp3",              "label": "Harp",                    "group": "strings",    "tailFade": 3 },
+    { "id": "l1_vibraphone",       "file": "l1_Vibraphone.mp3",        "label": "Vibraphone",              "group": "percussion", "tailFade": 3 },
+    { "id": "l1_strings",          "file": "l1_Strings.mp3",           "label": "Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l1_double_bass",      "file": "l1_Double_Bass.mp3",       "label": "Double Bass",             "group": "strings",    "tailFade": 3 },
+    { "id": "l1_birbyne_shep",     "file": "l1_Birbyne_Shep_Flute.mp3","label": "Birbyne + Shep Flute",   "group": "winds",      "tailFade": 1.5 },
+    { "id": "l1_choir",            "file": "l1_Choir.mp3",             "label": "Choir",                   "group": "vocals",     "tailFade": 3 },
+    { "id": "l1_light_percussion", "file": "l1_Light_Percussion.mp3",  "label": "Light Percussion",        "group": "percussion", "tailFade": 1.5 },
+
+    { "id": "l2_birbyne_shep",     "file": "l2_Birbyne_Shep_Flute.mp3","label": "Birbyne + Shep Flute",   "group": "winds",      "tailFade": 1.5 },
+    { "id": "l2_choir",            "file": "l2_Choir.mp3",             "label": "Choir",                   "group": "vocals",     "tailFade": 3 },
+    { "id": "l2_harp",             "file": "l2_Harp.mp3",              "label": "Harp",                    "group": "strings",    "tailFade": 3 },
+    { "id": "l2_percussion",       "file": "l2_Percussion.mp3",        "label": "Percussion",              "group": "percussion", "tailFade": 1.5 },
+    { "id": "l2_strings",          "file": "l2_Strings.mp3",           "label": "Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l2_vibraphone",       "file": "l2_Vibraphone.mp3",        "label": "Vibraphone",              "group": "percussion", "tailFade": 3 },
+    { "id": "l2_village_sfx",      "file": "l2_Village_SFX.mp3",       "label": "Village SFX",             "group": "percussion", "tailFade": 1.5 },
+    { "id": "l2_war_horn",         "file": "l2_War_Horn.mp3",          "label": "War Horn",                "group": "brass",      "tailFade": 1.5 },
+
+    { "id": "l3_2_violin_pizz",    "file": "l3_2_Violin_Pizz.mp3",     "label": "2nd Violin Pizz",         "group": "strings",    "tailFade": 1.5 },
+    { "id": "l3_choir",            "file": "l3_Choir.mp3",             "label": "Choir",                   "group": "vocals",     "tailFade": 3 },
+    { "id": "l3_full_orchestra",   "file": "l3_Full_Orchestra.mp3",    "label": "Full Orchestra",          "group": "orchestra",  "tailFade": 3 },
+    { "id": "l3_harp",             "file": "l3_Harp.mp3",              "label": "Harp",                    "group": "strings",    "tailFade": 3 },
+    { "id": "l3_heavy_percussion", "file": "l3_Heavy_Percussion.mp3",  "label": "Heavy Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l3_light_percussion", "file": "l3_Light_Percussion.mp3",  "label": "Light Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l3_low_brass",        "file": "l3_Low_Brass.mp3",         "label": "Low Brass",               "group": "brass",      "tailFade": 1.5 },
+    { "id": "l3_lutes",            "file": "l3_Lutes.mp3",             "label": "Lutes",                   "group": "strings",    "tailFade": 3 },
+    { "id": "l3_small_orchestra",  "file": "l3_Small_Orchestra.mp3",   "label": "Small Orchestra",         "group": "orchestra",  "tailFade": 3 },
+    { "id": "l3_strings",          "file": "l3_Strings.mp3",           "label": "Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l3_village_sfx",      "file": "l3_Village_SFX.mp3",       "label": "Village SFX",             "group": "percussion", "tailFade": 1.5 },
+    { "id": "l3_war_horn",         "file": "l3_War_Horn.mp3",          "label": "War Horn",                "group": "brass",      "tailFade": 1.5 },
+
+    { "id": "l4_atmosphere",       "file": "l4_Atmosphere.mp3",        "label": "Atmosphere",              "group": "atmosphere", "tailFade": 5 },
+    { "id": "l4_birbyne",          "file": "l4_Birbyne.mp3",           "label": "Birbyne",                 "group": "winds",      "tailFade": 1.5 },
+    { "id": "l4_flautando_str",    "file": "l4_Flautando_Strings.mp3", "label": "Flautando Strings",       "group": "strings",    "tailFade": 3.5 },
+    { "id": "l4_harp",             "file": "l4_Harp.mp3",              "label": "Harp",                    "group": "strings",    "tailFade": 3 },
+    { "id": "l4_shep_flute",       "file": "l4_Shep_Flute.mp3",        "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l4_strings",          "file": "l4_Strings.mp3",           "label": "Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l4_vibraphone",       "file": "l4_Vibraphone.mp3",        "label": "Vibraphone",              "group": "percussion", "tailFade": 3 },
+    { "id": "l4_war_horn",         "file": "l4_War_Horn.mp3",          "label": "War Horn",                "group": "brass",      "tailFade": 1.5 },
+
+    { "id": "l5_accordion",          "file": "l5_Accordion.mp3",          "label": "Accordion",            "group": "winds",      "tailFade": 1.5 },
+    { "id": "l5_full_orchestra",     "file": "l5_Full_Orchestra.mp3",     "label": "Full Orchestra",       "group": "orchestra",  "tailFade": 3 },
+    { "id": "l5_high_strings",       "file": "l5_High_Strings.mp3",       "label": "High Strings",         "group": "strings",    "tailFade": 3.5 },
+    { "id": "l5_light_orchestra",    "file": "l5_Light_Orchestra.mp3",    "label": "Light Orchestra",      "group": "orchestra",  "tailFade": 3 },
+    { "id": "l5_light_percussion_2", "file": "l5_Light_Percussion_2.mp3", "label": "Light Percussion 2",  "group": "percussion", "tailFade": 1.5 },
+    { "id": "l5_light_percussion",   "file": "l5_Light_Percussion.mp3",   "label": "Light Percussion",    "group": "percussion", "tailFade": 1.5 },
+    { "id": "l5_lutes",              "file": "l5_Lutes.mp3",              "label": "Lutes",                "group": "strings",    "tailFade": 3 },
+    { "id": "l5_medium_orchestra",   "file": "l5_Medium_Orchestra.mp3",   "label": "Medium Orchestra",    "group": "orchestra",  "tailFade": 3 },
+    { "id": "l5_strings",            "file": "l5_Strings.mp3",            "label": "Strings",              "group": "strings",    "tailFade": 3.5 },
+    { "id": "l5_toms",               "file": "l5_Toms.mp3",               "label": "Toms",                 "group": "percussion", "tailFade": 1.5 },
+
+    { "id": "amb_s1",     "file": "Ch2_s1.mp3",           "label": "Ambience — Departure",       "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s2",     "file": "Ch2_s2.mp3",           "label": "Ambience — Toward Forge",    "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s3",     "file": "Ch2_s3.mp3",           "label": "Ambience — Forge Arrival",   "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s4",     "file": "Ch2_s4.mp3",           "label": "Ambience — Forge Streets",   "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s5",     "file": "Ch2_s5.mp3",           "label": "Ambience — The Smithy",      "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s6_7_8", "file": "Ch2_s6%2B7%2B8.mp3",  "label": "Ambience — Rune / Chase",    "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s9",     "file": "Ch2_s9.mp3",           "label": "Ambience — Chase",           "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s10",    "file": "Ch2_s10.mp3",          "label": "Ambience — Forest",          "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.9, "fadeIn": 6, "fadeOut": 6 }
+  ],
+  "rooms": [
+    {
+      "id": "scene-1",
+      "stems": ["l1_harp", "l1_vibraphone", "l1_strings", "l1_double_bass"],
+      "drones": ["amb_s1"],
+      "paceLock": 12,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-2",
+      "stems": ["l1_harp", "l1_vibraphone", "l1_strings", "l1_double_bass", "l1_birbyne_shep", "l1_choir", "l1_light_percussion"],
+      "drones": ["amb_s2"],
+      "paceLock": 10,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-3",
+      "stems": [
+        "l2_birbyne_shep", "l2_strings", "l2_choir",
+        "l2_harp", "l2_vibraphone",
+        "l2_war_horn", "l2_percussion", "l2_village_sfx"
+      ],
+      "drones": ["amb_s3"],
+      "paceLock": 14,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-4",
+      "stems": [
+        "l3_harp", "l3_2_violin_pizz", "l3_lutes", "l3_choir", "l3_strings",
+        "l3_full_orchestra", "l3_war_horn",
+        "l3_low_brass", "l3_heavy_percussion", "l3_light_percussion", "l3_village_sfx"
+      ],
+      "drones": ["amb_s4"],
+      "paceLock": 18,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-5",
+      "stems": [
+        "l3_harp", "l3_2_violin_pizz", "l3_lutes", "l3_war_horn",
+        "l3_small_orchestra", "l3_heavy_percussion"
+      ],
+      "drones": ["amb_s5"],
+      "paceLock": 14,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-6",
+      "stems": [
+        "l4_harp", "l4_vibraphone", "l4_birbyne", "l4_shep_flute", "l4_strings",
+        "l4_flautando_str", "l4_war_horn", "l4_atmosphere"
+      ],
+      "drones": ["amb_s6_7_8"],
+      "paceLock": 18,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-7",
+      "stems": ["l4_strings", "l4_flautando_str", "l4_atmosphere"],
+      "drones": ["amb_s6_7_8"],
+      "paceLock": 16,
+      "loop": { "duration": 24.000, "bars": 16, "bpm": 120, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-8",
+      "stems": ["l5_strings", "l5_light_orchestra", "l5_light_percussion", "l5_accordion"],
+      "drones": ["amb_s6_7_8"],
+      "paceLock": 12,
+      "loop": { "duration": 26.483, "bars": 16, "bpm": 145, "timeSignature": [4, 4] }
+    },
+    {
+      "id": "scene-9",
+      "stems": [
+        "l5_strings", "l5_light_percussion", "l5_accordion",
+        "l5_full_orchestra", "l5_medium_orchestra", "l5_lutes",
+        "l5_high_strings", "l5_toms", "l5_light_percussion_2"
+      ],
+      "drones": ["amb_s9"],
+      "paceLock": 14,
+      "loop": { "duration": 26.483, "bars": 16, "bpm": 145, "timeSignature": [4, 4] }
+    },
+    {
+      "id": "scene-10",
+      "stems": [
+        "l5_strings", "l5_light_percussion", "l5_light_percussion_2",
+        "l5_accordion", "l5_full_orchestra"
+      ],
+      "drones": ["amb_s10"],
+      "paceLock": 20,
+      "loop": { "duration": 26.483, "bars": 16, "bpm": 145, "timeSignature": [4, 4] },
+      "isOutro": true,
+      "holdDuration": 52.966,
+      "buttonRevealAt": 38
+    }
+  ],
+  "stingers": [],
+  "impacts": []
+}
