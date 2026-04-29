@@ -18,7 +18,7 @@
     <p class="intro-eyebrow">An Audiovisual Experience</p>
     <h2 class="intro-title">The Ancient Wanderer</h2>
     <div class="intro-divider"></div>
-    <p class="intro-body">A wanderer without a name. A village lost to something old and patient. As you scroll, the music builds from sparse harp and fujara to full battle orchestra — following the story through darkness and back into light.</p>
+    <p class="intro-body">Original music written to be moved through. Across 33 scenes and three distinct sound worlds, the score builds around you as you scroll — composed stem by stem, growing from a single instrument into something full. A Final Year Project by composer Jack Larkin.</p>
     <div class="intro-hints">
       <div class="intro-hint"><span class="icon">↕</span> Scroll to move through the world</div>
       <div class="intro-hint"><span class="icon">⏳</span> Each section asks you to pause and listen</div>
@@ -27,6 +27,14 @@
     <button class="intro-enter" id="intro-btn" aria-label="Enter the experience and begin audio playback">Enter the World</button>
     <div class="loading-bar-wrap">
       <div class="loading-bar" id="loading-bar"></div>
+    </div>
+    <div class="intro-footer">
+      <div class="intro-chapters">
+        <a href="/chapter2" class="intro-chapter-link">Chapter II</a>
+        <span class="intro-footer-sep">·</span>
+        <a href="/chapter3" class="intro-chapter-link">Chapter III</a>
+      </div>
+      <a href="https://jacklarkincomposer.co.uk" target="_blank" rel="noopener" class="intro-site-link">jacklarkincomposer.co.uk</a>
     </div>
   </div>
 </div>
@@ -90,6 +98,7 @@
     <p class="hero-sub">An unnamed traveller. A world without edges.<br>A silence that remembers.</p>
     <div class="hero-rule"><div class="rl"></div><span>✦ ✦ ✦</span><div class="rl r"></div></div>
     <p class="cin-scroll-prompt">Scroll down to begin</p>
+    <div class="cin-scroll-chevron"></div>
   </div>
 </section>
 
@@ -403,6 +412,7 @@
 </footer>
 
 <canvas id="particle-canvas" aria-hidden="true"></canvas>
+<script>history.scrollRestoration = 'manual'; window.scrollTo(0, 0);</script>
 <script type="module" src="/js/main.js"></script>
 </body>
 </html>

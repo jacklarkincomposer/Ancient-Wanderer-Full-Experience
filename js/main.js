@@ -22,9 +22,9 @@ async function runCinematic(engine) {
 
   // Lore paragraph fades in, then "He is known" fades in beneath it
   lore.classList.add('cin-visible');
-  await delay(3500); // let lore settle before reveal appears
+  await delay(6000); // let lore settle before reveal appears
   reveal.classList.add('cin-visible');
-  await delay(7000); // hold both together
+  await delay(10000); // hold both together
 
   // Fade both out together
   const fadeOut = 'opacity 2.5s ease, transform 2.5s ease';
@@ -123,23 +123,20 @@ async function boot() {
 
     // Chunky progress animation runs in parallel with decode
     const chunks = [
-      { to: 8,  pause: 100 },
-      { to: 21, pause: 380 },
-      { to: 29, pause: 90  },
-      { to: 44, pause: 520 },
-      { to: 51, pause: 110 },
-      { to: 63, pause: 600 },
-      { to: 72, pause: 280 },
+      { to: 18, pause: 320 },
+      { to: 38, pause: 480 },
+      { to: 57, pause: 400 },
+      { to: 72, pause: 440 },
     ];
     async function animateChunks() {
       for (const { to, pause } of chunks) {
-        loadingBar.style.transition = 'width 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+        loadingBar.style.transition = 'width 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
         loadingBar.style.width = to + '%';
         await delay(pause);
       }
     }
 
-    await Promise.all([engine.decodePreFetched(allInitial), animateChunks(), delay(3000)]);
+    await Promise.all([engine.decodePreFetched(allInitial), animateChunks(), delay(2000)]);
 
     loadingBar.style.transition = 'width 0.4s ease';
     loadingBar.style.width = '100%';
