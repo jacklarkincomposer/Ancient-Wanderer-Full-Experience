@@ -17,7 +17,6 @@ async function runCinematic(engine) {
   const overlay  = document.getElementById('cinematic-intro');
   const textWrap = overlay.querySelector('.cin-text-wrap');
 
-  overlay.classList.add('cin-active');
   await delay(1200);
 
   textWrap.classList.add('cin-visible');
