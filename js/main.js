@@ -14,21 +14,29 @@ const configUrl = `/compositions/${compositionId}/config.json`;
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function runCinematic(engine) {
-  const overlay  = document.getElementById('cinematic-intro');
-  const textWrap = overlay.querySelector('.cin-text-wrap');
+  const overlay = document.getElementById('cinematic-intro');
+  const lore    = overlay.querySelector('.cin-lore');
+  const reveal  = overlay.querySelector('.cin-reveal');
 
   await delay(1200);
 
-  textWrap.classList.add('cin-visible');
-  await delay(9000);
+  // Lore paragraph fades in, then "He is known" fades in beneath it
+  lore.classList.add('cin-visible');
+  await delay(3500); // let lore settle before reveal appears
+  reveal.classList.add('cin-visible');
+  await delay(7000); // hold both together
 
-  textWrap.style.transition = 'opacity 2.5s ease, transform 2.5s ease';
-  textWrap.classList.remove('cin-visible');
-  await delay(4500);
+  // Fade both out together
+  const fadeOut = 'opacity 2.5s ease, transform 2.5s ease';
+  lore.style.transition = fadeOut;
+  reveal.style.transition = fadeOut;
+  lore.classList.remove('cin-visible');
+  reveal.classList.remove('cin-visible');
+  await delay(3500); // 2.5s fade + 1s black
 
+  // Reveal hero — music starts as overlay dissolves
   engine.setRoom(0);
   engine.startScheduler();
-
   overlay.style.transition = 'opacity 4s ease';
   overlay.classList.remove('cin-active');
   await delay(4500);
@@ -103,8 +111,6 @@ async function boot() {
     const loadingBarWrap = document.querySelector('.loading-bar-wrap');
     const loadingBar = document.getElementById('loading-bar');
     loadingBarWrap.classList.add('active');
-    loadingBar.style.width = '30%';
-
     await engine.init();
 
     // Restore volume carried over from the previous chapter
@@ -115,10 +121,29 @@ async function boot() {
       engine.setMasterGain(savedVol);
     }
 
-    await engine.decodePreFetched(allInitial);
+    // Chunky progress animation runs in parallel with decode
+    const chunks = [
+      { to: 8,  pause: 100 },
+      { to: 21, pause: 380 },
+      { to: 29, pause: 90  },
+      { to: 44, pause: 520 },
+      { to: 51, pause: 110 },
+      { to: 63, pause: 600 },
+      { to: 72, pause: 280 },
+    ];
+    async function animateChunks() {
+      for (const { to, pause } of chunks) {
+        loadingBar.style.transition = 'width 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+        loadingBar.style.width = to + '%';
+        await delay(pause);
+      }
+    }
 
+    await Promise.all([engine.decodePreFetched(allInitial), animateChunks(), delay(3000)]);
+
+    loadingBar.style.transition = 'width 0.4s ease';
     loadingBar.style.width = '100%';
-    await new Promise(r => setTimeout(r, 300));
+    await delay(600);
 
     engine.ready = true;
     ui.closeModal();
