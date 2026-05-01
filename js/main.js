@@ -13,18 +13,30 @@ const configUrl = `/compositions/${compositionId}/config.json`;
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-async function runCinematic(engine) {
+async function runCinematic(engine, introSfx) {
   const overlay = document.getElementById('cinematic-intro');
   const lore    = overlay.querySelector('.cin-lore');
   const reveal  = overlay.querySelector('.cin-reveal');
+  const hints   = overlay.querySelectorAll('.cin-hint-flash');
+  const skipBtn = document.getElementById('cin-skip');
 
-  await delay(1200);
+  let skipped = false;
+  let skipResolve;
+  const skipPromise = new Promise(r => { skipResolve = r; });
+  const go = ms => Promise.race([delay(ms), skipPromise]);
 
-  // Lore paragraph fades in, then "He is known" fades in beneath it
+  skipBtn.classList.add('cin-skip-show');
+  skipBtn.addEventListener('click', () => { skipped = true; if (introSfx) { introSfx.pause(); introSfx.currentTime = 0; } skipResolve(); }, { once: true });
+
+  await go(1200);
+
+  // Beat 1: lore paragraph — long hold for comfortable reading (~90% of text time)
   lore.classList.add('cin-visible');
-  await delay(6000); // let lore settle before reveal appears
+  await go(18000);
+
+  // Beat 2: "He is known" drifts in briefly beneath
   reveal.classList.add('cin-visible');
-  await delay(10000); // hold both together
+  await go(4000);
 
   // Fade both out together
   const fadeOut = 'opacity 2.5s ease, transform 2.5s ease';
@@ -32,14 +44,25 @@ async function runCinematic(engine) {
   reveal.style.transition = fadeOut;
   lore.classList.remove('cin-visible');
   reveal.classList.remove('cin-visible');
-  await delay(3500); // 2.5s fade + 1s black
+  await go(3500);
+
+  // Hint flashes — one at a time
+  for (const hint of hints) {
+    hint.classList.add('cin-visible');
+    await go(2500);
+    hint.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
+    hint.classList.remove('cin-visible');
+    await go(1000);
+  }
+  await go(600);
 
   // Reveal hero — music starts as overlay dissolves
+  skipBtn.classList.remove('cin-skip-show');
   engine.setRoom(0);
   engine.startScheduler();
-  overlay.style.transition = 'opacity 4s ease';
+  overlay.style.transition = skipped ? 'opacity 1s ease' : 'opacity 4s ease';
   overlay.classList.remove('cin-active');
-  await delay(4500);
+  await delay(skipped ? 1000 : 4500);
 
   document.getElementById('controls').classList.remove('cin-ui-hidden');
 }
@@ -146,7 +169,9 @@ async function boot() {
     ui.closeModal();
 
     if (compositionId === 'cursed-village') {
-      await runCinematic(engine);
+      const introSfx = new Audio('https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Sound_Design/Ch1/Intro_Sound_Design.mp3');
+      introSfx.play().catch(() => {});
+      await runCinematic(engine, introSfx);
     } else {
       engine.setRoom(0);
       engine.startScheduler();

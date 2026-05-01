@@ -22,7 +22,14 @@
     <div class="intro-hints">
       <div class="intro-hint"><span class="icon">↕</span> Scroll to move through the world</div>
       <div class="intro-hint"><span class="icon">⏳</span> Each section asks you to pause and listen</div>
-      <div class="intro-hint"><span class="icon">♪</span> Use headphones for the full experience</div>
+      <div class="intro-hint">
+        <svg class="headphone-icon headphone-icon--inline" viewBox="0 0 44 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 21C7 11.611 14.163 4 23 4C31.837 4 39 11.611 39 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <rect x="3" y="20" width="8" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="33" y="20" width="8" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Use headphones for the full experience
+      </div>
     </div>
     <button class="intro-enter" id="intro-btn" aria-label="Enter the experience and begin audio playback">Enter the World</button>
     <div class="loading-bar-wrap">
@@ -45,6 +52,17 @@
     <p class="cin-lore">There is a man who has walked this world longer than anyone can remember. He carries no name that anyone knows, only a sword worn at the hilt from use and a satchel old enough that the leather has forgotten what colour it started as. Nobody knows where he came from. Nobody knows why he does what he does. He simply appears, does what needs to be done, and leaves before anyone can thank him.</p>
     <p class="cin-reveal">He is known as the ancient wanderer.</p>
   </div>
+  <div class="cin-hints-wrap">
+    <div class="cin-hint-flash">
+      <svg class="headphone-icon" viewBox="0 0 44 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 21C7 11.611 14.163 4 23 4C31.837 4 39 11.611 39 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="3" y="20" width="8" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="33" y="20" width="8" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      Use headphones for the full experience
+    </div>
+  </div>
+  <button id="cin-skip">Skip</button>
 </div>
 
 <!-- Scroll arrow -->
