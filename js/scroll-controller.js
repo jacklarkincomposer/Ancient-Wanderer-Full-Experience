@@ -185,7 +185,7 @@ export function createScrollController(config, engine, loader, ui) {
       const lastScene = rooms.length - 2;
       let firstUnvisited = -1;
       for (let i = ai + 1; i <= Math.min(idx, lastScene); i++) {
-        if (!unlk.has(i) && !asOn && !outroHit) { firstUnvisited = i; break; }
+        if (!unlk.has(i) && !outroHit) { firstUnvisited = i; break; }
       }
       if (firstUnvisited !== -1) {
         const result = engine.setRoom(firstUnvisited);
@@ -442,8 +442,8 @@ export function createScrollController(config, engine, loader, ui) {
   }
 
   // ── Auto scroll ──
-  let asOn = false, asRaf = null, asLast = 0;
-  const AS_SPEED = 40; // px per second
+  let asOn = false, asRaf = null, asLast = 0, asAccum = 0;
+  const AS_SPEED = 22; // px per second
 
   function toggleAS() {
     const b = document.getElementById('as-btn');
@@ -456,6 +456,7 @@ export function createScrollController(config, engine, loader, ui) {
       cancelLock();
       b.textContent = 'Stop'; b.classList.add('on'); b.setAttribute('aria-pressed', 'true');
       asLast = performance.now();
+      asAccum = 0;
       asRaf = requestAnimationFrame(asStep);
     }
   }
@@ -463,10 +464,15 @@ export function createScrollController(config, engine, loader, ui) {
   function asStep(now) {
     if (!asOn) return;
     if (outroHit) { cancelAS(); return; }
+    if (locked) { asLast = now; asRaf = requestAnimationFrame(asStep); return; }
     const dt = (now - asLast) / 1000;
     asLast = now;
-    window.scrollBy({ top: AS_SPEED * dt, behavior: 'instant' });
-    onScroll();
+    asAccum += AS_SPEED * dt;
+    const px = Math.floor(asAccum);
+    if (px >= 1) {
+      asAccum -= px;
+      window.scrollBy({ top: px, behavior: 'instant' });
+    }
     asRaf = requestAnimationFrame(asStep);
   }
 
@@ -514,7 +520,7 @@ export function createScrollController(config, engine, loader, ui) {
         }
       }
 
-      if (locked && engine.ready && !engine.muted && !asOn) {
+      if (locked && engine.ready && !engine.muted) {
         if (window.scrollY > lockBot) {
           window.scrollTo({ top: lockBot, behavior: 'instant' });
           warn();
