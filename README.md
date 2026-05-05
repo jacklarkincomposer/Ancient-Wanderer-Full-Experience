@@ -328,4 +328,4 @@ The stem architecture (individual instrument tracks mixed live in the browser) i
 
 ---
 
-*© Jack Larkin 2025 · [jacklarkincomposer.co.uk](https://jacklarkincomposer.co.uk)*
+*© Jack Larkin 2026 · [jacklarkincomposer.co.uk](https://jacklarkincomposer.co.uk)*
