@@ -1,0 +1,208 @@
+{
+  "composition": {
+    "id": "fishing-village",
+    "title": "The Ancient Wanderer",
+    "subtitle": "Chapter III — The Fishing Village",
+    "composer": "Jack Larkin",
+    "finaleTrack": "Finale_Track.mp3",
+    "creditsTrack": "Credits_Track.mp3"
+  },
+  "audio": {
+    "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Ch3/",
+    "soundDesignBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Sound_Design/Ch3/",
+    "defaultLoop": {
+      "duration": 33.882,
+      "bars": 16,
+      "bpm": 85,
+      "timeSignature": [3, 4]
+    },
+    "fadeIn": 4,
+    "fadeOut": 3,
+    "masterGain": 0.8,
+    "masterFadeOut": 15,
+    "scheduleAhead": 1.5,
+    "scheduleInterval": 200
+  },
+  "stems": [
+    { "id": "l1_violins",           "file": "l1_Violins.mp3",             "label": "Violins",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l1_shep_flute",        "file": "l1_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l1_war_horn",          "file": "l1_War_Horn.mp3",            "label": "War Horn",                "group": "brass",      "tailFade": 1.5 },
+    { "id": "l1_mark_tree",         "file": "l1_Mark_Tree.mp3",           "label": "Mark Tree",               "group": "percussion", "tailFade": 3 },
+    { "id": "l1_double_bass_celli", "file": "l1_Double_Bass_Celli.mp3",   "label": "Double Bass & Celli",     "group": "strings",    "tailFade": 3.5 },
+
+    { "id": "l2_dulcimers_untuned_perc", "file": "l2_Dulcimers_Untuned_Perc.mp3", "label": "Dulcimers & Untuned Perc", "group": "percussion", "tailFade": 3 },
+    { "id": "l2_1st_violins",       "file": "l2_1st_Violins.mp3",         "label": "1st Violins",             "group": "strings",    "tailFade": 3.5 },
+    { "id": "l2_shep_flute",        "file": "l2_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l2_full_strings",      "file": "l2_Full_Strings.mp3",        "label": "Full Strings",            "group": "strings",    "tailFade": 3.5 },
+    { "id": "l2_hulusi",            "file": "l2_Hulusi.mp3",              "label": "Hulusi",                  "group": "winds",      "tailFade": 1.5 },
+    { "id": "l2_light_orch_choir",  "file": "l2_Light_Orchestra_Choir.mp3","label": "Light Orchestra & Choir","group": "orchestra",  "tailFade": 3 },
+
+    { "id": "l3_light_orchestra",   "file": "l3_Light_Orchestra.mp3",     "label": "Light Orchestra",         "group": "orchestra",  "tailFade": 3 },
+    { "id": "l3_full_strings",      "file": "l3_Full_Strings.mp3",        "label": "Full Strings",            "group": "strings",    "tailFade": 3.5 },
+    { "id": "l3_shep_flute",        "file": "l3_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l3_hulusi",            "file": "l3_Hulusi.mp3",              "label": "Hulusi",                  "group": "winds",      "tailFade": 1.5 },
+    { "id": "l3_bells",             "file": "l3_Bells.mp3",               "label": "Bells",                   "group": "percussion", "tailFade": 3 },
+    { "id": "l3_choir",             "file": "l3_Choir.mp3",               "label": "Choir",                   "group": "vocals",     "tailFade": 3 },
+
+    { "id": "l4_shep_flute",        "file": "l4_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l4_hulusi",            "file": "l4_Hulusi.mp3",              "label": "Hulusi",                  "group": "winds",      "tailFade": 1.5 },
+    { "id": "l4_strings",           "file": "l4_Strings.mp3",             "label": "Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l4_bells",             "file": "l4_Bells.mp3",               "label": "Bells",                   "group": "percussion", "tailFade": 3 },
+    { "id": "l4_light_percussion",  "file": "l4_Light_Percussion.mp3",    "label": "Light Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l4_full_orch_pipes",   "file": "l4_Full_Orchestra_Pipes.mp3","label": "Full Orchestra & Pipes",  "group": "orchestra",  "tailFade": 3 },
+    { "id": "l4_brass",             "file": "l4_Brass.mp3",               "label": "Brass",                   "group": "brass",      "tailFade": 1.5 },
+    { "id": "l4_shakuhachi",        "file": "l4_Shakuhachi.mp3",          "label": "Shakuhachi",              "group": "winds",      "tailFade": 1.5 },
+    { "id": "l4_choir",             "file": "l4_Choir.mp3",               "label": "Choir",                   "group": "vocals",     "tailFade": 3 },
+    { "id": "l4_tuned_percussion",  "file": "l4_Tuned_Percussion.mp3",    "label": "Tuned Percussion",        "group": "percussion", "tailFade": 3 },
+    { "id": "l4_1st_violins",       "file": "l4_1st_Violins.mp3",         "label": "1st Violins",             "group": "strings",    "tailFade": 3.5 },
+    { "id": "l4_voice",             "file": "l4_Voice.mp3",               "label": "Voice",                   "group": "vocals",     "tailFade": 3 },
+
+    { "id": "l5_choir_tuned_perc",  "file": "l5_Choir_Tuned_Perc.mp3",   "label": "Choir & Tuned Perc",      "group": "vocals",     "tailFade": 3 },
+    { "id": "l5_bells",             "file": "l5_Bells.mp3",               "label": "Bells",                   "group": "percussion", "tailFade": 3 },
+    { "id": "l5_full_strings",      "file": "l5_Full_Strings.mp3",        "label": "Full Strings",            "group": "strings",    "tailFade": 3.5 },
+    { "id": "l5_shep_flute",        "file": "l5_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l5_hulusi",            "file": "l5_Hulusi.mp3",              "label": "Hulusi",                  "group": "winds",      "tailFade": 1.5 },
+    { "id": "l5_shakuhachi",        "file": "l5_Shakuhachi.mp3",          "label": "Shakuhachi",              "group": "winds",      "tailFade": 1.5 },
+    { "id": "l5_light_percussion",  "file": "l5_Light_Percussion.mp3",    "label": "Light Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l5_trumpet_frhorn",    "file": "l5_Trumpet_French_Horn.mp3", "label": "Trumpet & French Horn",   "group": "brass",      "tailFade": 1.5 },
+    { "id": "l5_pipes",             "file": "l5_Pipes.mp3",               "label": "Pipes",                   "group": "winds",      "tailFade": 1.5 },
+    { "id": "l5_shaker",            "file": "l5_Shaker.mp3",              "label": "Shaker",                  "group": "percussion", "tailFade": 1.5 },
+    { "id": "l5_full_brass",        "file": "l5_Full_Brass.mp3",          "label": "Full Brass",              "group": "brass",      "tailFade": 1.5 },
+    { "id": "l5_heavy_percussion",  "file": "l5_Heavy_Percussion.mp3",    "label": "Heavy Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l5_low_brass_braam",   "file": "l5_Low_Brass_Braam.mp3",     "label": "Low Brass Braam",         "group": "brass",      "tailFade": 1.5 },
+
+    { "id": "l6_light_percussion",  "file": "l6_Light_Percussion.mp3",    "label": "Light Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l6_light_orch_pipes",  "file": "l6_Light_Orchestra_Pipes.mp3","label": "Light Orchestra & Pipes","group": "orchestra",  "tailFade": 3 },
+    { "id": "l6_strings",           "file": "l6_Strings.mp3",             "label": "Strings",                 "group": "strings",    "tailFade": 3.5 },
+    { "id": "l6_shep_flute",        "file": "l6_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l6_hulusi",            "file": "l6_Hulusi.mp3",              "label": "Hulusi",                  "group": "winds",      "tailFade": 1.5 },
+    { "id": "l6_shakuhachi",        "file": "l6_Shakuhachi.mp3",          "label": "Shakuhachi",              "group": "winds",      "tailFade": 1.5 },
+    { "id": "l6_brass",             "file": "l6_Brass.mp3",               "label": "Brass",                   "group": "brass",      "tailFade": 1.5 },
+
+    { "id": "l7_light_percussion",  "file": "l7_Light_Percussion.mp3",    "label": "Light Percussion",        "group": "percussion", "tailFade": 1.5 },
+    { "id": "l7_light_orch_pipes",  "file": "l7_Light_Orchestra_Pipes.mp3","label": "Light Orchestra & Pipes","group": "orchestra",  "tailFade": 3 },
+    { "id": "l7_choir",             "file": "l7_Choir.mp3",               "label": "Choir",                   "group": "vocals",     "tailFade": 3 },
+    { "id": "l7_full_strings",      "file": "l7_Full_Strings.mp3",        "label": "Full Strings",            "group": "strings",    "tailFade": 3.5 },
+    { "id": "l7_shep_flute",        "file": "l7_Shep_Flute.mp3",          "label": "Shepard Flute",           "group": "winds",      "tailFade": 1.5 },
+    { "id": "l7_hulusi",            "file": "l7_Hulusi.mp3",              "label": "Hulusi",                  "group": "winds",      "tailFade": 1.5 },
+    { "id": "l7_shakuhachi",        "file": "l7_Shakuhachi.mp3",          "label": "Shakuhachi",              "group": "winds",      "tailFade": 1.5 },
+    { "id": "l7_full_brass",        "file": "l7_Full_Brass.mp3",          "label": "Full Brass",              "group": "brass",      "tailFade": 1.5 },
+
+    { "id": "l8_atmosphere",        "file": "l8_Atmosphere.mp3",          "label": "Atmosphere",              "group": "strings",    "tailFade": 5 },
+    { "id": "l8_double_bass",       "file": "l8_Double_Bass.mp3",         "label": "Double Bass",             "group": "strings",    "tailFade": 3.5 },
+    { "id": "l8_celli",             "file": "l8_Celli.mp3",               "label": "Celli",                   "group": "strings",    "tailFade": 3.5 },
+
+    { "id": "amb_s1",  "file": "Ch3_s1.mp3",  "label": "Ambience — Scene 1",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s2",  "file": "Ch3_s2.mp3",  "label": "Ambience — Scene 2",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s3",  "file": "Ch3_s3.mp3",  "label": "Ambience — Scene 3",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s4",  "file": "Ch3_s4.mp3",  "label": "Ambience — Scene 4",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s5",  "file": "Ch3_s5.mp3",  "label": "Ambience — Scene 5",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s6",  "file": "Ch3_s6.mp3",  "label": "Ambience — Scene 6",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s7",  "file": "Ch3_s7.mp3",  "label": "Ambience — Scene 7",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s8",  "file": "Ch3_s8+9+10.mp3", "label": "Ambience — Scene 8",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s9",  "file": "Ch3_s8+9+10.mp3", "label": "Ambience — Scene 9",  "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s10", "file": "Ch3_s8+9+10.mp3", "label": "Ambience — Scene 10", "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s11", "file": "Ch3_s11.mp3", "label": "Ambience — Scene 11", "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 },
+    { "id": "amb_s12", "file": "Ch3_s12.mp3", "label": "Ambience — Scene 12", "group": "ambience", "type": "drone", "tailFade": 8, "gain": 0.85, "fadeIn": 6, "fadeOut": 6 }
+  ],
+  "rooms": [
+    {
+      "id": "scene-1",
+      "stems": ["l1_violins", "l1_shep_flute", "l1_war_horn", "l1_mark_tree", "l1_double_bass_celli"],
+      "drones": ["amb_s1"],
+      "paceLock": 14
+    },
+    {
+      "id": "scene-2",
+      "stems": ["l2_dulcimers_untuned_perc", "l2_1st_violins", "l2_shep_flute"],
+      "drones": ["amb_s2"],
+      "paceLock": 12
+    },
+    {
+      "id": "scene-3",
+      "stems": ["l2_dulcimers_untuned_perc", "l2_1st_violins", "l2_shep_flute", "l2_full_strings", "l2_hulusi", "l2_light_orch_choir"],
+      "drones": ["amb_s3"],
+      "paceLock": 16
+    },
+    {
+      "id": "scene-4",
+      "stems": ["l3_light_orchestra", "l3_full_strings", "l3_shep_flute", "l3_hulusi", "l3_bells", "l3_choir"],
+      "drones": ["amb_s4"],
+      "paceLock": 18
+    },
+    {
+      "id": "scene-5",
+      "stems": [
+        "l4_shep_flute", "l4_hulusi", "l4_strings", "l4_bells", "l4_light_percussion",
+        "l4_full_orch_pipes", "l4_brass", "l4_shakuhachi", "l4_choir",
+        "l4_tuned_percussion", "l4_1st_violins", "l4_voice"
+      ],
+      "drones": ["amb_s5"],
+      "paceLock": 20
+    },
+    {
+      "id": "scene-6",
+      "stems": ["l4_shakuhachi", "l4_choir", "l4_tuned_percussion", "l4_1st_violins"],
+      "drones": ["amb_s6"],
+      "paceLock": 14
+    },
+    {
+      "id": "scene-7",
+      "stems": [
+        "l5_choir_tuned_perc", "l5_bells", "l5_full_strings", "l5_shep_flute",
+        "l5_hulusi", "l5_shakuhachi", "l5_light_percussion", "l5_trumpet_frhorn"
+      ],
+      "drones": ["amb_s7"],
+      "paceLock": 18
+    },
+    {
+      "id": "scene-8",
+      "stems": [
+        "l5_choir_tuned_perc", "l5_bells", "l5_full_strings", "l5_shep_flute",
+        "l5_hulusi", "l5_shakuhachi", "l5_light_percussion", "l5_trumpet_frhorn",
+        "l5_pipes", "l5_shaker", "l5_full_brass"
+      ],
+      "drones": ["amb_s8"],
+      "paceLock": 16
+    },
+    {
+      "id": "scene-9",
+      "stems": [
+        "l5_choir_tuned_perc", "l5_bells", "l5_full_strings", "l5_shep_flute",
+        "l5_hulusi", "l5_shakuhachi", "l5_light_percussion", "l5_trumpet_frhorn",
+        "l5_pipes", "l5_shaker", "l5_full_brass",
+        "l5_heavy_percussion", "l5_low_brass_braam"
+      ],
+      "drones": ["amb_s9"],
+      "paceLock": 18
+    },
+    {
+      "id": "scene-10",
+      "stems": ["l6_light_percussion", "l6_light_orch_pipes", "l6_strings", "l6_shep_flute", "l6_hulusi", "l6_shakuhachi", "l6_brass"],
+      "drones": ["amb_s10"],
+      "paceLock": 20,
+      "loop": { "duration": 36.000, "bars": 16, "bpm": 80, "timeSignature": [3, 4] },
+      "roomIntro": { "id": "boom_stinger", "fadeIn": 0.05, "loopAt": 0.05 }
+    },
+    {
+      "id": "scene-11",
+      "stems": ["l8_atmosphere", "l8_double_bass", "l8_celli"],
+      "drones": ["amb_s11"],
+      "paceLock": 22,
+      "loop": { "duration": 26.182, "bars": 8, "bpm": 55, "timeSignature": [3, 4] }
+    },
+    {
+      "id": "scene-12",
+      "stems": ["l7_light_percussion", "l7_light_orch_pipes", "l7_choir", "l7_full_strings", "l7_shep_flute", "l7_hulusi", "l7_shakuhachi", "l7_full_brass"],
+      "drones": ["amb_s12"],
+      "paceLock": 20,
+      "loop": { "duration": 36.000, "bars": 16, "bpm": 80, "timeSignature": [3, 4] },
+      "isOutro": true,
+      "holdDuration": 36
+    }
+  ],
+  "stingers": [
+    { "id": "boom_stinger", "file": "../Ch1/Boom_Stinger.mp3", "label": "Boom Stinger" }
+  ],
+  "impacts": []
+}

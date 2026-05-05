@@ -168,9 +168,12 @@ async function boot() {
     engine.ready = true;
     ui.closeModal();
 
-    if (compositionId === 'cursed-village') {
-      const introSfx = new Audio('https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Sound_Design/Ch1/Intro_Sound_Design.mp3');
-      introSfx.play().catch(() => {});
+    if (config.composition.cinematicIntro) {
+      let introSfx = null;
+      if (config.composition.introSoundDesign && config.audio.soundDesignBase) {
+        introSfx = new Audio(config.audio.soundDesignBase + config.composition.introSoundDesign);
+        introSfx.play().catch(() => {});
+      }
       await runCinematic(engine, introSfx);
     } else {
       engine.setRoom(0);

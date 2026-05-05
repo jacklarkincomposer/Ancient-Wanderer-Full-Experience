@@ -17,7 +17,7 @@ export function createAudioEngine(config) {
   const activeRoomIntros = {};        // roomId → { src, g } for intros currently playing
   const droneExitTimers = {};         // roomId → setTimeout handle for drone-to-loop transitions
 
-  let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null, ambienceGain = null, musicGain = null;
+  let actx = null, mg = null, analyser = null, analyserData = null, impactGain = null, ambienceGain = null, musicGain = null, mainLimiter = null;
   let muted = false, ambienceMuted = false, ready = false, fadingOut = false;
   const activeStems = new Set();
   const buf = {};
@@ -79,6 +79,7 @@ export function createAudioEngine(config) {
     analyser.connect(impactGain);
     impactGain.connect(limiter);
     limiter.connect(actx.destination);
+    mainLimiter = limiter;
   }
 
   // ── Stem loading ──
@@ -146,8 +147,9 @@ export function createAudioEngine(config) {
             g.connect(def && def.group === 'ambience' ? ambienceGain : musicGain);
             gain[id] = g;
           }
-          // Skip scheduleImmediately if a stem-level intro is mid-play, or if a roomIntro is blocking this stem
-          if (!(playedIntros.has(id) && lastInstance[id]) && !pendingIntroEnds.has(id)) {
+          // Only schedule immediately if the stem is already active — otherwise a silent orphan
+          // source runs in the background and doubles the audio when the stem activates later.
+          if (activeStems.has(id) && !(playedIntros.has(id) && lastInstance[id]) && !pendingIntroEnds.has(id)) {
             scheduleImmediately(id);
           }
           // Check pending fades
@@ -472,7 +474,7 @@ export function createAudioEngine(config) {
     // Drone-to-loop transition: when leaving a drone-only room, loop stems start at full volume
     // from beat 1 after the drone finishes fading — no gain ramp, no scheduleImmediately.
     // pendingIntroEnds blocks the scheduler; a lookahead timer fires createInstance at loopStartTime.
-    const prevWasDroneOnly = prevRoom && prevRoom.stems && prevRoom.stems.length === 0;
+    const prevWasDroneOnly = (prevRoom && prevRoom.stems && prevRoom.stems.length === 0) || !!room.isOutro;
     // Don't run drone-exit if a roomIntro is about to fire — the roomIntro's lookahead timer
     // handles stem scheduling and gain, so the drone-exit timer would start loops too early.
     const willPlayRoomIntro = !!(room.roomIntro && !playedRoomIntros.has(room.id) && buf[room.roomIntro.id]);
@@ -686,6 +688,61 @@ export function createAudioEngine(config) {
     n.start();
   }
 
+  // ── One-shot playback (finale / credits tracks) ──
+  // Fetches, decodes, and plays a URL through mg. Returns decoded.duration so the
+  // caller can size a CSS transition to match playback length. onEnded fires at track end.
+  let oneShotSource = null;
+  let oneShotGain = null;
+
+  async function playOneShot(url, onEnded) {
+    try {
+      const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const arrayBuf = await res.arrayBuffer();
+      const decoded = await actx.decodeAudioData(arrayBuf);
+      const src = actx.createBufferSource();
+      src.buffer = decoded;
+      // Route through a dedicated gain node so fadeOutOneShot can ramp it independently
+      const g = actx.createGain();
+      g.gain.value = 1;
+      src.connect(g);
+      g.connect(mainLimiter || actx.destination); // bypass mg so master-fade doesn't silence the finale
+      src.start(actx.currentTime);
+      oneShotSource = src;
+      oneShotGain = g;
+      src.onended = () => { oneShotSource = null; oneShotGain = null; if (onEnded) onEnded(); };
+      return decoded.duration;
+    } catch (err) {
+      // Soft-fail: keep the visual sequence advancing so the user isn't stranded on a silent screen.
+      console.error('[audio] playOneShot failed:', url, err);
+      const fallback = 30;
+      if (onEnded) setTimeout(onEnded, fallback * 1000);
+      return fallback;
+    }
+  }
+
+  function stopOneShot() {
+    if (oneShotSource) {
+      try { oneShotSource.stop(); } catch (e) {}
+      oneShotSource = null;
+      oneShotGain = null;
+    }
+  }
+
+  function fadeOutOneShot(duration) {
+    if (!oneShotGain || !actx) return;
+    const dur = duration != null ? duration : 5;
+    const now = actx.currentTime;
+    oneShotGain.gain.cancelScheduledValues(now);
+    oneShotGain.gain.setValueAtTime(oneShotGain.gain.value, now);
+    oneShotGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    if (oneShotSource) {
+      try { oneShotSource.stop(now + dur + 0.05); } catch (e) {}
+    }
+    oneShotSource = null;
+    oneShotGain = null;
+  }
+
   // ── Prefetch / decode (background load before AudioContext) ──
   async function prefetchStems(ids, onProgress) {
     // Auto-include intro variants so they prefetch alongside their loop partners
@@ -759,7 +816,7 @@ export function createAudioEngine(config) {
               g.connect(def && def.group === 'ambience' ? ambienceGain : musicGain);
               gain[id] = g;
             }
-            scheduleImmediately(id);
+            if (activeStems.has(id)) scheduleImmediately(id);
             stemLoadedCallbacks.forEach(cb => cb(id));
           }
         } catch (e) {
@@ -816,6 +873,9 @@ export function createAudioEngine(config) {
     getAnalyserData: () => analyserData,
     getContext: () => actx,
     playStinger,
+    playOneShot,
+    stopOneShot,
+    fadeOutOneShot,
     setImpactDuck,
     prefetchStems,
     decodePreFetched,

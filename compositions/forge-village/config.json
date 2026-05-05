@@ -4,7 +4,7 @@
     "title": "The Ancient Wanderer",
     "subtitle": "Chapter II — The Forge Village",
     "composer": "Jack Larkin",
-    "nextChapter": "https://ancientwanderer.jacklarkincomposer.co.uk/chapter3",
+    "nextChapter": "/chapter3",
     "nextChapterLabel": "Begin Chapter III →"
   },
   "audio": {

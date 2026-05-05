@@ -13,11 +13,12 @@ export function createStemLoader(engine, config) {
 
   async function prepareForRoom(idx, onProgress) {
     const current = getStemsForRoom(idx);
-    const next = idx < rooms.length - 1 ? getStemsForRoom(idx + 1) : [];
-    const prev = idx > 0 ? getStemsForRoom(idx - 1) : [];
+    const next    = idx < rooms.length - 1 ? getStemsForRoom(idx + 1) : [];
+    const next2   = idx < rooms.length - 2 ? getStemsForRoom(idx + 2) : [];
+    const prev    = idx > 0 ? getStemsForRoom(idx - 1) : [];
 
-    // Deduplicate — current first (highest priority)
-    const all = [...new Set([...current, ...next, ...prev])];
+    // Deduplicate — current first (highest priority), then next, next+1, prev
+    const all = [...new Set([...current, ...next, ...next2, ...prev])];
     const stillNeeded = new Set(all);
 
     // Load current room stems first, then the rest fire-and-forget
@@ -25,7 +26,7 @@ export function createStemLoader(engine, config) {
     const remaining = all.filter(s => !current.includes(s));
     if (remaining.length > 0) engine.loadStems(remaining, onProgress);
 
-    // Evict stems from rooms outside the current 3-room window that aren't still needed
+    // Evict stems from rooms outside the current 4-room window that aren't still needed
     if (idx >= 3) {
       for (let i = 0; i <= idx - 3; i++) {
         const candidates = getStemsForRoom(i).filter(s => !stillNeeded.has(s));

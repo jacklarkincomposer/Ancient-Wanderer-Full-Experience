@@ -4,8 +4,10 @@
     "title": "The Ancient Wanderer",
     "subtitle": "Chapter I — The Cursed Village",
     "composer": "Jack Larkin",
-    "nextChapter": "https://ancientwanderer.jacklarkincomposer.co.uk/chapter2",
-    "nextChapterLabel": "Begin Chapter II →"
+    "nextChapter": "/chapter2",
+    "nextChapterLabel": "Begin Chapter II →",
+    "cinematicIntro": true,
+    "introSoundDesign": "Intro_Sound_Design.mp3"
   },
   "audio": {
     "cdnBase": "https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Ch1/",

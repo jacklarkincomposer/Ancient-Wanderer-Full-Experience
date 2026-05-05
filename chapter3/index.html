@@ -8,25 +8,611 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap">
-<style>
-  :root { --gold: #c9a84c; --ash: #0d0c0a; --text: #d4c9a8; --text-dim: #7a7060; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--ash); color: var(--text); font-family: 'Cormorant Garamond', serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
-  .box { max-width: 480px; }
-  .eyebrow { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 1.5rem; }
-  h1 { font-family: 'Cinzel', serif; font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; line-height: 1.05; color: var(--text); margin-bottom: 1rem; }
-  h1 em { display: block; font-style: italic; font-weight: 400; color: var(--gold); font-size: 0.45em; letter-spacing: 0.1em; margin-top: 0.3em; }
-  p { font-style: italic; color: var(--text-dim); line-height: 1.8; font-size: 1rem; margin-top: 1.5rem; }
-  a { color: var(--gold); text-decoration: none; font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; display: inline-block; margin-top: 2rem; border: 1px solid rgba(201,168,76,0.3); padding: 0.8rem 2rem; transition: border-color 0.3s; }
-  a:hover { border-color: var(--gold); }
-</style>
+<link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  <div class="box">
-    <p class="eyebrow">The Ancient Wanderer</p>
-    <h1>Chapter III<em>The Coastal Village</em></h1>
-    <p>Coming soon.</p>
-    <a href="/chapter2">← Return to Chapter II</a>
+<body class="scroll-locked" data-composition="fishing-village">
+
+<!-- Intro modal -->
+<div id="intro-modal" class="pre-show">
+  <div class="intro-box">
+    <p class="intro-eyebrow">Chapter III — The Fishing Village</p>
+    <h2 class="intro-title">The Ancient Wanderer</h2>
+    <div class="intro-divider"></div>
+    <button class="intro-enter" id="intro-btn" aria-label="Continue to Chapter III">Continue</button>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar" id="loading-bar"></div>
+    </div>
   </div>
+</div>
+
+<!-- Scroll arrow -->
+<div id="scroll-arrow">
+  <span class="arrow-label">Continue</span>
+  <div class="arrow-chevron"></div>
+</div>
+
+<!-- Chapter prompt — unused in Ch.3 (finale replaces navigation) -->
+<a id="chapter-prompt" class="chapter-prompt" href="#" aria-hidden="true" tabindex="-1">
+  <span class="arrow-label"></span>
+  <div class="arrow-chevron"></div>
+</a>
+
+<div class="cursor" id="cursor"></div>
+<div id="progress-bar"></div>
+<div id="fetch-bar-wrap"><div id="fetch-bar"></div></div>
+<div id="notification"></div>
+<div id="pace-lock"></div>
+<div id="pace-warning">Scrolling too fast</div>
+<div id="visualiser"></div>
+
+<!-- Controls -->
+<div id="controls">
+  <div class="stem-indicators"></div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="as-btn" aria-pressed="false">Auto Scroll</button>
+    <button class="ctrl-btn" id="mute-btn" aria-label="Toggle music" aria-pressed="false">Music On</button>
+    <button class="ctrl-btn" id="amb-btn" aria-label="Toggle sound design" aria-pressed="false">SFX</button>
+  </div>
+  <div id="volume-wrap">
+    <label for="vol">Vol</label>
+    <input type="range" id="vol" min="0" max="1" step="0.01" value="0.8" aria-label="Master volume">
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <svg class="ruins-svg" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <path d="M0,200 L0,160 L40,160 L40,120 L60,120 L60,80 L80,80 L80,60 L100,60 L100,80 L120,80 L120,120 L140,120 L140,160 L180,160 L180,140 L200,140 L200,100 L220,100 L220,60 L240,60 L240,40 L260,40 L260,60 L280,60 L280,100 L300,100 L300,140 L340,140 L340,160 L400,160 L400,130 L420,130 L420,90 L440,70 L460,90 L460,130 L480,130 L480,160 L560,160 L560,140 L580,140 L580,100 L600,80 L620,80 L620,50 L640,50 L640,30 L660,30 L660,50 L680,50 L680,80 L700,80 L700,100 L720,100 L720,140 L740,140 L740,160 L800,160 L800,120 L820,120 L820,80 L840,80 L840,60 L860,40 L880,60 L880,80 L900,80 L900,120 L920,120 L920,160 L980,160 L980,140 L1000,140 L1000,100 L1020,70 L1040,100 L1040,140 L1060,140 L1060,160 L1120,160 L1120,130 L1140,130 L1140,90 L1160,90 L1160,60 L1180,60 L1180,40 L1200,40 L1200,60 L1220,60 L1220,90 L1240,90 L1240,130 L1260,130 L1260,160 L1320,160 L1320,140 L1340,140 L1340,120 L1360,120 L1360,160 L1400,160 L1440,160 L1440,200 Z" fill="rgba(201,168,76,0.08)"/>
+    <circle cx="300" cy="40" r="1" fill="rgba(201,168,76,0.6)"/>
+    <circle cx="750" cy="20" r="1.5" fill="rgba(201,168,76,0.8)"/>
+    <circle cx="1100" cy="30" r="1" fill="rgba(201,168,76,0.5)"/>
+    <circle cx="500" cy="15" r="1" fill="rgba(201,168,76,0.4)"/>
+    <circle cx="900" cy="10" r="2" fill="rgba(201,168,76,0.6)"/>
+  </svg>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+    <p class="hero-eyebrow">Chapter III — The Fishing Village</p>
+    <h1 class="hero-title">The Ancient<em>Wanderer</em></h1>
+    <p class="hero-sub">Salt wind and grey water. A rune and a boat.<br>The end of the road, and what waits beyond it.</p>
+    <div class="hero-rule"><div class="rl"></div><span>✦ ✦ ✦</span><div class="rl r"></div></div>
+  </div>
+</section>
+
+<!-- SCENE 1 -->
+<div class="scene" id="scene-1">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S1.png" alt="Still in the Forest"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Forest · The Rune Decides</p>
+      <h2 class="scene-title">Still in the Forest</h2>
+      <p class="traveller-line">"He has carried enough of these stones to know the difference between a rune that is waiting and a rune that has decided."</p>
+      <p class="scene-text">Still in the forest, he looks down at the rune in his hand.</p>
+      <p class="scene-text">It has started glowing. Not the steady patient blue it held on the smith's shelf — something deeper now, more alive, the colour going slow through itself the way the colour moves through deep water when the light is failing above. He has carried enough of these stones to know the difference between a rune that is waiting and a rune that has decided.</p>
+      <p class="scene-text">He closes his fist around it. Feels the pull. North and west, toward the coast — not a tug exactly, more a leaning, the way a tired man leans toward a fire he has not yet reached.</p>
+      <p class="scene-text">He turns that way without needing to think about it.</p>
+      <p class="scene-text">He walks.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Violins</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">War Horn</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Mark Tree</span><div class="sc-track"><div class="sc-fill" style="--w:45%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass & Celli</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 2 -->
+<div class="scene" id="scene-2">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S2.png" alt="Clifftops Above the Sea"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Sea Wind · Something Wrong</p>
+      <h2 class="scene-title">Clifftops Above the Sea</h2>
+      <p class="traveller-line">"This is a place that is simply running out of reasons to continue."</p>
+      <p class="scene-text">The trees thin and then end and he is standing on clifftops above the sea.</p>
+      <p class="scene-text">The wind comes in cold and sharp off the water, full of salt and the wide grey weight of the open horizon, and below him a fishing village sits on the rocky shore as though it had been there since before anyone thought to name it. Stone cottages low against the wind. A harbour wall built from the same stone as the cliff above it, the boundary between the works of men and the works of the world here grown so old that it is no longer easy to say where one ends and the other begins.</p>
+      <p class="scene-text">He can see immediately that something is wrong here too, though it is a different kind of wrong to what he left behind in the valley.</p>
+      <p class="scene-text">No creature lurking beneath the surface of things. No curse twisting people into hollow shells. Just absence. The boats in the harbour have not moved — he can tell from up here by the way the moorings hang, slack in the way ropes only hang when they have not been touched in days. The nets are folded on the docks, neatly, the way a thing is folded by someone who does not yet believe they will not need it again. Half the windows in the village are dark in the middle of the afternoon.</p>
+      <p class="scene-text">This is a place that is simply running out of reasons to continue.</p>
+      <p class="scene-text">He stands on the clifftop a long moment, feeling the wind take his cloak, watching the smoke from the few chimneys still burning go sideways before it has had time to rise.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Dulcimers & Untuned Perc</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">1st Violins</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 3 -->
+<div class="scene" id="scene-3">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S3.png" alt="Into the Village"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Grief · Present and Broken</p>
+      <h2 class="scene-title">Into the Village</h2>
+      <p class="traveller-line">"These people are not asleep. There is too much inside, and nowhere for it to go."</p>
+      <p class="scene-text">He comes down the cliff path slowly, watching.</p>
+      <p class="scene-text">A child on the steps of a house, knees pulled up, looking at nothing — no, that is not quite right; looking at the stone between her feet, the way the child in the cursed village had looked at the ground between hers. He notices the echo and sets it aside. The two are not the same. The child in the valley had been hollow. This child is full. She is full of something that has nowhere to go.</p>
+      <p class="scene-text">An old woman in a doorway mending a fishing net with the methodical patience of someone who has nothing better to do and knows it. Her hands move without her watching them. The net is the same net it was an hour ago, and will be the same net an hour from now. She is mending it the way some people pray — not because she expects an answer, but because the moving of the fingers is the only thing keeping her in the world.</p>
+      <p class="scene-text">A man sitting on the harbour wall, staring at the boats he has not taken out in weeks. There is a coil of rope at his feet that he has not touched. Beside it, a tin mug, gone cold a long time ago.</p>
+      <p class="scene-text">These people are not asleep. They are awake and present and broken, which is in some ways harder to look at than the hollowness was. The hollow had no one inside it. This is the opposite. There is too much inside, and nowhere for it to go.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Dulcimers & Untuned Perc</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">1st Violins</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Orchestra & Choir</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 4 -->
+<div class="scene" id="scene-4">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S4.png" alt="The Harbour"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Indifferent Sea · The Temple</p>
+      <h2 class="scene-title">The Harbour</h2>
+      <p class="traveller-line">"A man can make peace with malice. The sea offers nothing to make peace with."</p>
+      <p class="scene-text">He stops at the harbour and watches the sea for a moment.</p>
+      <p class="scene-text">It moves the way it always moves. Indifferent. Vast. Without any particular awareness of the village on its shore, or of what the village has lost. The sea does not grieve. It does not remember the men who went out on it and did not come back. It does not remember the boats. It does not remember the nets they cast, or the songs they sang while casting them, or the names their wives called from the shore on the evenings they were due back. It simply continues.</p>
+      <p class="scene-text">This, he has come to think, is the cruelty of the sea — not that it takes, but that it does not notice it has taken. A man can make peace with malice. Malice is at least an acknowledgement. The sea offers nothing to make peace with. The sea offers only itself, going on.</p>
+      <p class="scene-text">Off in the distance, he sees a temple. The rune in his hand begins to pull and grow warmer.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Light Orchestra</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Bells</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 5 -->
+<div class="scene" id="scene-5">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S5.png" alt="The Offerings"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Grief Given Form · The Temple</p>
+      <h2 class="scene-title">The Offerings</h2>
+      <p class="traveller-line">"People will worship the silence itself, eventually, if no other listener is left."</p>
+      <p class="scene-text">He finds the temple by following the offerings.</p>
+      <p class="scene-text">He sees the first one on the coastal path — a small bunch of dried flowers tied to a post with a piece of cord, the cord weather-faded but the knot recent. Then further along, a smooth stone with something scratched into it in a language he does not speak but recognises as prayer; the script is old and his eye does not know it, but the shape of a prayer is the same in any tongue. It has the look of something said when there is nothing else to say.</p>
+      <p class="scene-text">Then more flowers. More stones. A carved wooden fish no bigger than his palm, left on a flat rock above the waterline, painted blue once and now mostly grey. A child's shoe. A loop of hair tied with thread. A piece of folded paper softened to pulp by the salt air, the writing on it long since gone.</p>
+      <p class="scene-text">Someone has been coming here every day. More than one person, probably. Leaving things for the sea. Asking for something, or simply giving something, in the way that people who have lost more than they can hold sometimes give things to the empty air because the empty air is the only one left to give them to.</p>
+      <p class="scene-text">The temple itself is ancient — far older than the village built around it. Celtic stonework, half collapsed, half submerged at high tide; the foundations black with the slow patient work of the water on stone. The carved faces of sea creatures along the lintels have been worn smooth by salt and time until they are barely faces at all, just suggestions, the memory of a shape someone once cut into rock for reasons no one alive remembers.</p>
+      <p class="scene-text">Whatever god this place was built for, the name has been forgotten.</p>
+      <p class="scene-text">But the offerings on the rocks at its base are fresh.</p>
+      <p class="scene-text">People still come here even without knowing exactly who they are coming to. They come because the sea is here, and the sea took something from them, and they need somewhere to put their grief. The forgetting of the god has not stopped the grief from needing somewhere to go. He has seen this before, in other places, in other shapes. People will worship the silence itself, eventually, if no other listener is left.</p>
+      <p class="scene-text">He stands at the edge of the water for a long time.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Bells</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Orchestra & Pipes</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Brass</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir + Voice</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Tuned Perc + 1st Vlns</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 6 -->
+<div class="scene" id="scene-6">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S6.png" alt="What This Place Needs"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Quiet · The Rune Knows</p>
+      <h2 class="scene-title">What This Place Needs</h2>
+      <p class="traveller-line">"Not a fight. Not a sword. The rune knows what he does not. It has always known."</p>
+      <p class="scene-text">He knows, the way he always knows, what this place needs.</p>
+      <p class="scene-text">Not a fight. Not a sword. Something older and quieter than that. The sea is not malicious — it has not cursed this village out of spite or hunger or the slow patient appetite of the thing that came up through the cobblestones in the valley. Something was broken here. Some old understanding between this place and the water it depends on, some compact made when the temple was new and the carved faces still had eyes — and nobody alive remembers what it was, or how it got broken, or what was promised in exchange for what.</p>
+      <p class="scene-text">He does not need to know. That is not how the runes work. They are not for understanding; they are for closing. They know what he does not. They have always known.</p>
+      <p class="scene-text">The rune knows. That is what the runes are for.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Tuned Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">1st Violins</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 7 -->
+<div class="scene" id="scene-7">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S7.png" alt="The Offering"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Blue Light · The Sea</p>
+      <h2 class="scene-title">The Offering</h2>
+      <p class="traveller-line">"He holds the rune there until he feels it go cool in his hand. Until it has done what it came to do."</p>
+      <p class="scene-text">He crouches at the water's edge, where the waves come in and pull back and come in again.</p>
+      <p class="scene-text">He presses the rune flat against the surface of the sea.</p>
+      <p class="scene-text">The blue light spreads outward immediately — bleeding into the water, following the currents, moving faster than water has any right to move, diffusing into the grey-green deep until the whole surface near the temple is faintly luminous. A blue that is not quite a colour. A blue that is the memory of a colour, or the promise of one, drifting outward in slow concentric rings until the rings touch the dark stones of the harbour wall and the dark hulls of the unmoving boats and keep going.</p>
+      <p class="scene-text">He holds the rune there until he feels it go cool in his hand. Until it stops pulling. Until it has done what it came to do.</p>
+      <p class="scene-text">Then he lets go and stands up.</p>
+      <p class="scene-text">The sea closes over the place where the stone was as though it had never been there. The blue continues to spread outward, slower now, fainter, until it is more an idea of light than a light itself.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Choir & Tuned Perc</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Bells</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Trumpet & French Horn</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 8 -->
+<div class="scene" id="scene-8">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S8.png" alt="The Village Changing"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">The Sound Returning · Walking Away</p>
+      <h2 class="scene-title">The Village Changing</h2>
+      <p class="traveller-line">"He doesn't look at the water. He already knows."</p>
+      <p class="scene-text">He doesn't look at the water.</p>
+      <p class="scene-text">He already knows.</p>
+      <p class="scene-text">He can hear it behind him — the sound of the village changing. A shout from somewhere near the harbour. Then another. Then voices overlapping, feet on stone, the particular clatter of a door thrown open hard, the sound of people moving toward the shore with an urgency that has nothing tired in it.</p>
+      <p class="scene-text">He walks in the other direction.</p>
+      <p class="scene-text">Through the village, against the tide of people streaming toward the harbour. Past the old woman who has dropped her net and is moving faster than she probably has in years, one hand on the wall of her cottage to steady herself, her face open in a way faces only open when something has come back from a place faces are not used to seeing things come back from. Past doors opening and people emerging blinking into the grey afternoon light, drawn by the shouting, by something in the air that feels different to how it felt this morning. A man without his coat. A woman holding a child she has forgotten she was holding. An old fisherman who has not stood up that fast in twenty years and does not yet realise that he has.</p>
+      <p class="scene-text">Nobody sees him. He is used to that.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Choir & Tuned Perc</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Bells</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Trumpet & French Horn</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Pipes</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shaker</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Brass</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 9 -->
+<div class="scene" id="scene-9">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S9.png" alt="A Held Breath"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">The Moment Before · Something Beginning</p>
+      <h2 class="scene-title">A Held Breath</h2>
+      <p class="traveller-line">"Whatever she is about to do, she has not done it yet. But she is about to."</p>
+      <p class="scene-text">By the time he reaches the edge of the village the noise from the harbour has become something he recognises.</p>
+      <p class="scene-text">Not panic. Not silence. Something between the two, and older than either. The particular sound of people who have just been given back something they thought was gone forever and do not yet know what to do with it. A sound that is half weeping and half laughter and is not really either, because what they are doing has not been given a name in any language he has ever walked through, and may not need one.</p>
+      <p class="scene-text">He passes the child he saw on his way in — the one who had been sitting alone on the steps, looking at the stone between her feet. She is standing now. She is looking toward the harbour with the same still expression, but there is something different in it. The beginning of something. Her hands have come down from her knees. Her mouth is slightly open. Whatever she is about to do, she has not done it yet, but she is about to. He can see the moment in her like a held breath.</p>
+      <p class="scene-text">He keeps walking.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Choir & Tuned Perc</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Brass</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Heavy Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Low Brass Braam</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Pipes</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Bells + Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 10 -->
+<div class="scene" id="scene-10">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S10.png" alt="The Boats Returning"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">The Dead Come Home · Grief and Relief</p>
+      <h2 class="scene-title">The Boats Returning</h2>
+      <p class="traveller-line">"Coming home in the patient way the dead come home in stories: not to be reunited, but to be laid to rest."</p>
+      <p class="scene-text">He stops at the edge of the village where the coastal path begins to climb back toward the clifftops.</p>
+      <p class="scene-text">He can see the harbour from here. The boats on the horizon — the lost ones, the ones that went out weeks ago — moving steadily toward shore. Empty of crew. Sails set as though by hands that are no longer there to set them, the wind catching them clean and true. The boats themselves intact, returned, coming home in the patient way the dead come home in stories: not to be reunited, but to be laid to rest.</p>
+      <p class="scene-text">The village is on the dock now, or moving toward it, a sound of grief and relief so tangled together it is impossible to tell which is which. A woman has fallen to her knees on the stones. A man is wading into the water up to his waist without seeming to notice the cold. Someone is calling a name, the same name over and over, into the wind, into the boats, into the grey and indifferent sea — not because the name will be answered, but because there are some names that have to be said aloud before the throat that has been holding them can rest.</p>
+      <p class="scene-text">He watches for just a moment.</p>
+      <p class="scene-text">He allows himself that.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Orchestra & Pipes</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Strings</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:60%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Brass</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 11 -->
+<div class="scene" id="scene-11">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S11.png" alt="The Satchel"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">Still · Before the Next Thing</p>
+      <h2 class="scene-title">The Satchel</h2>
+      <p class="traveller-line">"Then he reaches into the satchel."</p>
+      <p class="scene-text">Then he reaches into the satchel.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Atmosphere</span><div class="sc-track"><div class="sc-fill" style="--w:55%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Double Bass</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Celli</span><div class="sc-track"><div class="sc-fill" style="--w:50%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 12 — isOutro: true, Loop 7 @80 BPM, holdDuration: 72s, auto-finale -->
+<div class="scene" id="scene-12">
+  <div class="scene-frame"><img src="https://cdn.jacklarkincomposer.co.uk/Ancient-Wanderer-Full-Experience-Stems/Images/Ch3/S12.png" alt="The Bag Reveal"></div>
+  <div class="scene-body">
+    <div class="scene-left">
+      <p class="scene-mood">The Weight of It · The Road</p>
+      <h2 class="scene-title">The Bag Reveal</h2>
+      <p class="traveller-line">"Each one is a place. Each one is a road he has not yet walked."</p>
+      <p class="scene-text">He has never counted them.</p>
+      <p class="scene-text">He knows roughly how many there are — enough that the satchel sits heavy on his hip, enough that the strap has worn its shape into his shoulder over the years, enough that he has had to replace the leather of the bag itself more than once. Not so many that he lets himself think about what the number means. There is a kind of arithmetic that does no good to anyone. He learned long ago not to do it.</p>
+      <p class="scene-text">He opens the satchel and looks down.</p>
+      <p class="scene-text">Dozens of small carved stones, each one glowing its own colour. Red for the urgent ones, the ones that mean something is happening now, the ones that wake him from sleep when sleep finds him. Blue for the directional ones, the patient ones, the ones that wait. Green, purple, gold, silver, amber — colours he has learned the meanings of over time, some of which he understood the moment he first saw them and some of which took years to work out, and a few of which he is still not certain about even now.</p>
+      <p class="scene-text">Each one is a place.</p>
+      <p class="scene-text">Each one is a road he has not yet walked, and a village he has not yet seen, and people going about their lives at this very moment without knowing what is waiting for them, or that somewhere in the world a man is walking toward them with a stone in his pocket and a sword at his hip and the slow accumulated weight of every other place he has ever been.</p>
+      <p class="scene-text">He closes the satchel.</p>
+      <p class="scene-text">He picks up the one that has been warming in his palm since he stopped — a deep amber glow, steady and patient, a colour like late afternoon light through old glass.</p>
+      <p class="scene-text">He turns toward the road.</p>
+      <p class="scene-text">The road is always the same road. Ancient cracked stone stretching to the horizon. Standing stones either side, with the old symbols carved into them that nobody reads anymore, the lichen growing over the carvings the way time grows over everything in the end. The sun somewhere ahead, low and gold, doing what it always does.</p>
+      <p class="scene-text">He has walked it more times than he can count.</p>
+      <p class="scene-text">He walks it again.</p>
+    </div>
+    <div class="scene-right">
+      <div class="stem-chart">
+        <p class="stem-chart-label">Layers Active</p>
+        <div class="sc-row"><span class="sc-lbl">Light Percussion</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Light Orchestra & Pipes</span><div class="sc-track"><div class="sc-fill" style="--w:75%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Choir</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Strings</span><div class="sc-track"><div class="sc-fill" style="--w:85%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shepard Flute</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Hulusi</span><div class="sc-track"><div class="sc-fill" style="--w:70%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Shakuhachi</span><div class="sc-track"><div class="sc-fill" style="--w:65%"></div></div><div class="sc-pip"></div></div>
+        <div class="sc-row"><span class="sc-lbl">Full Brass</span><div class="sc-track"><div class="sc-fill" style="--w:80%"></div></div><div class="sc-pip"></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- outro-reveal kept for CORE_SPEC §11 DOM contract — button never revealed -->
+  <div class="outro-reveal">
+    <p class="outro-title">The Ancient Wanderer</p>
+    <p class="outro-sub">thank you for reading</p>
+    <a id="chapter-btn" class="chapter-btn hidden" href="#" aria-hidden="true" tabindex="-1"></a>
+  </div>
+</div>
+
+<!-- FINALE SKIP — shown during finale+credits, works like cin-skip in Ch.1 intro -->
+<button id="finale-skip">Skip</button>
+
+<!-- FINALE OVERLAY — film-credits scroll of all chapter images, populated by JS -->
+<div id="finale-screen" class="finale-screen">
+  <div class="finale-greeting">
+    <p class="finale-greeting-text">Thank You<br>For Listening</p>
+  </div>
+  <div id="finale-strip" class="finale-strip"></div>
+</div>
+
+<!-- CREDITS OVERLAY — text scrolls upward with Credits_Track.mp3 -->
+<div id="credits-screen" class="credits-screen">
+  <div id="credits-roll" class="credits-roll">
+    <div class="credits-roll-spacer"></div>
+
+    <p class="credits-main-title">The Ancient Wanderer</p>
+    <p class="credits-tagline">A Scroll-Driven Musical Experience</p>
+
+    <div class="credits-block">
+      <p class="credits-label">Written, Composed and Produced by</p>
+      <p class="credits-name large">Jack Larkin</p>
+    </div>
+
+    <div class="credits-divider"></div>
+
+    <div class="credits-block">
+      <p class="credits-chapter-title">Chapter I</p>
+      <p class="credits-chapter-name">The Cursed Village</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-chapter-title">Chapter II</p>
+      <p class="credits-chapter-name">The Forge Village</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-chapter-title">Chapter III</p>
+      <p class="credits-chapter-name">The Fishing Village</p>
+    </div>
+
+    <div class="credits-divider"></div>
+
+    <div class="credits-block">
+      <p class="credits-label">Original Score</p>
+      <p class="credits-name">Jack Larkin</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-label">Sound Design</p>
+      <p class="credits-name">Jack Larkin</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-label">Story and Narrative</p>
+      <p class="credits-name">Jack Larkin</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-label">Web Development</p>
+      <p class="credits-name">Jack Larkin</p>
+    </div>
+
+    <div class="credits-divider"></div>
+
+    <div class="credits-block">
+      <p class="credits-label">Visual Art generated with</p>
+      <p class="credits-name">Perplexity & Gemini</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-label">Audio Production</p>
+      <p class="credits-name">Logic Pro</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-label">Orchestral Libraries</p>
+      <p class="credits-name">East West Opus</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-label">Audio and Asset Hosting</p>
+      <p class="credits-name">Cloudflare R2</p>
+    </div>
+
+    <div class="credits-divider"></div>
+
+    <div class="credits-block">
+      <p class="credits-name">Recorded at 48kHz</p>
+    </div>
+
+    <div class="credits-block">
+      <p class="credits-name">Submitted in fulfilment of<br>a final year composition project</p>
+    </div>
+
+    <div class="credits-divider"></div>
+
+    <div class="credits-block">
+      <p class="credits-name">With thanks to those who listened<br>while it was still being written</p>
+    </div>
+
+    <div class="credits-divider"></div>
+
+    <p class="credits-fin">✦</p>
+
+    <div class="credits-roll-spacer"></div>
+  </div>
+</div>
+
+<!-- END SCREEN — shown after credits music finishes -->
+<div id="end-screen" class="end-screen">
+  <div class="end-inner">
+    <span class="end-emblem">✦</span>
+    <h2 class="end-title">The Ancient Wanderer</h2>
+    <p class="end-tagline">A Scroll-Driven Musical Experience</p>
+
+    <div class="end-rule"><div class="rl"></div><span>✦</span><div class="rl r"></div></div>
+
+    <p class="end-section-label">Journey Again</p>
+    <nav class="end-chapters">
+      <a href="/" class="end-chapter-link">
+        <span class="ecl-num">I</span>
+        <span class="ecl-name">The Cursed Village</span>
+      </a>
+      <a href="/chapter2/" class="end-chapter-link">
+        <span class="ecl-num">II</span>
+        <span class="ecl-name">The Forge Village</span>
+      </a>
+      <a href="/chapter3/" class="end-chapter-link">
+        <span class="ecl-num">III</span>
+        <span class="ecl-name">The Fishing Village</span>
+      </a>
+    </nav>
+
+    <div class="end-rule"><div class="rl"></div><span>✦</span><div class="rl r"></div></div>
+
+    <div class="end-actions">
+      <a href="https://jacklarkincomposer.co.uk" target="_blank" rel="noopener" class="end-btn end-btn--fill">Portfolio</a>
+      <a href="/about" class="end-btn end-btn--ghost">About This Project</a>
+    </div>
+
+    <nav class="end-socials">
+      <a href="https://www.youtube.com/@Jacklarkincomposer" target="_blank" rel="noopener" class="end-social-link">YouTube</a>
+      <span class="end-social-sep">·</span>
+      <a href="https://soundcloud.com/jacklarkincomposer" target="_blank" rel="noopener" class="end-social-link">SoundCloud</a>
+      <span class="end-social-sep">·</span>
+      <a href="https://www.instagram.com/jacklarkincomposer/" target="_blank" rel="noopener" class="end-social-link">Instagram</a>
+      <span class="end-social-sep">·</span>
+      <a href="mailto:jacklarkincomposer@gmail.com" class="end-social-link">Email</a>
+    </nav>
+
+    <p class="end-copy">© Jack Larkin 2026</p>
+  </div>
+</div>
+
+<!-- Credits section (failsafe / never shown in normal flow) -->
+<section id="credits">
+  <p class="credits-hl">The Ancient Wanderer</p>
+  <p class="credits-body">
+    Chapter III — The Fishing Village<br>
+    An Original Composition<br>
+    Jack Larkin · 2026<br><br>
+    <em>All worlds, motifs, and journeys fictional.</em>
+  </p>
+</section>
+
+<footer id="site-footer">
+  <span class="footer-divider">✦</span>
+  <a class="footer-name" href="https://jacklarkincomposer.co.uk" target="_blank" rel="noopener">Jack Larkin</a>
+  <nav class="footer-links" aria-label="Social links">
+    <a href="https://www.youtube.com/@Jacklarkincomposer" target="_blank" rel="noopener">YouTube</a>
+    <a href="https://soundcloud.com/jacklarkincomposer" target="_blank" rel="noopener">SoundCloud</a>
+    <a href="https://www.instagram.com/jacklarkincomposer/" target="_blank" rel="noopener">Instagram</a>
+    <a href="mailto:jacklarkincomposer@gmail.com">Email</a>
+  </nav>
+  <p class="footer-copy">© Jack Larkin 2026</p>
+</footer>
+
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+<script>history.scrollRestoration = 'manual'; window.scrollTo(0, 0);</script>
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
