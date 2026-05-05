@@ -861,6 +861,7 @@ export function createAudioEngine(config) {
     fadeOut,
     fadeOutMaster,
     setMasterGain,
+    getMasterGain: () => mg ? mg.gain.value : 0,
     toggleMute,
     toggleAmbienceMute,
     getStemLevel(id) {

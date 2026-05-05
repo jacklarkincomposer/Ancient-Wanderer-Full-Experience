@@ -437,7 +437,6 @@ export function createScrollController(config, engine, loader, ui) {
   // ── Chapter handoff ──
   function navigateToNextChapter(cfg) {
     if (!cfg.composition || !cfg.composition.nextChapter) return;
-    sessionStorage.setItem('aw_volume', document.getElementById('vol').value);
     window.location.href = cfg.composition.nextChapter;
   }
 
@@ -454,7 +453,7 @@ export function createScrollController(config, engine, loader, ui) {
     } else {
       asOn = true;
       cancelLock();
-      b.textContent = 'Stop'; b.classList.add('on'); b.setAttribute('aria-pressed', 'true');
+      b.textContent = 'Pause'; b.classList.add('on'); b.setAttribute('aria-pressed', 'true');
       asLast = performance.now();
       asAccum = 0;
       asRaf = requestAnimationFrame(asStep);
@@ -463,12 +462,19 @@ export function createScrollController(config, engine, loader, ui) {
 
   function asStep(now) {
     if (!asOn) return;
-    if (outroHit) { cancelAS(); return; }
-    if (locked) { asLast = now; asRaf = requestAnimationFrame(asStep); return; }
     const dt = (now - asLast) / 1000;
     asLast = now;
     asAccum += AS_SPEED * dt;
-    const px = Math.floor(asAccum);
+    let px = Math.floor(asAccum);
+    if (locked) {
+      const remaining = lockBot - window.scrollY;
+      if (remaining <= 0) {
+        asAccum = 0;
+        asRaf = requestAnimationFrame(asStep);
+        return;
+      }
+      px = Math.min(px, Math.floor(remaining));
+    }
     if (px >= 1) {
       asAccum -= px;
       window.scrollBy({ top: px, behavior: 'instant' });

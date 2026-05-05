@@ -103,9 +103,25 @@
   }
   .back-link:hover { color: var(--gold); }
   .back-link::before { content: '← '; }
+
+  .top-nav { position: fixed; top: 1.4rem; left: 1.6rem; z-index: 550; display: flex; align-items: center; gap: 0.9rem; font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.28em; text-transform: uppercase; }
+  .top-nav a { color: var(--gold-dim); text-decoration: none; transition: color 0.3s; padding: 0.25rem 0; }
+  .top-nav a:hover { color: var(--gold); }
+  .top-nav .sep { color: var(--gold-dim); opacity: 0.45; font-size: 0.5rem; }
+  @media (max-width: 600px) {
+    .top-nav { top: 0.9rem; left: 1rem; gap: 0.6rem; font-size: 0.5rem; letter-spacing: 0.22em; }
+  }
 </style>
 </head>
 <body>
+
+<nav class="top-nav" aria-label="Primary">
+  <a href="/">Home</a>
+  <span class="sep">·</span>
+  <a href="/about">About</a>
+  <span class="sep">·</span>
+  <a href="https://jacklarkincomposer.co.uk" target="_blank" rel="noopener">Portfolio</a>
+</nav>
 
 <div class="page">
 

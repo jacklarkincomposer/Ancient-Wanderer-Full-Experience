@@ -75,18 +75,42 @@ async function boot() {
   const scroll = createScrollController(config, engine, loader, ui);
 
   // Wire controls
-  document.getElementById('vol').addEventListener('input', e => {
+  const volSlider = document.getElementById('vol');
+  volSlider.addEventListener('input', e => {
     engine.setMasterGain(e.target.value);
+    sessionStorage.setItem('aw_volume', e.target.value);
     ui.vis();
   });
+
+  // Mirror master-gain ramps (e.g. fadeOutMaster) onto the slider so the
+  // user sees volume drop in real time during outro / finale fades.
+  let syncing = false;
+  function syncSliderToMaster() {
+    if (syncing) return;
+    syncing = true;
+    const tick = () => {
+      if (!engine.fadingOut) { syncing = false; return; }
+      const g = engine.getMasterGain();
+      volSlider.value = g.toFixed(3);
+      if (g <= 0.0005) { volSlider.value = 0; syncing = false; return; }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+  const _fadeOutMaster = engine.fadeOutMaster;
+  engine.fadeOutMaster = function (...args) {
+    const r = _fadeOutMaster.apply(engine, args);
+    syncSliderToMaster();
+    return r;
+  };
 
   document.getElementById('mute-btn').addEventListener('click', () => {
     const isMuted = engine.toggleMute();
     const b = document.getElementById('mute-btn');
     if (isMuted) {
-      b.textContent = 'Music Off'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
+      b.textContent = 'Music On'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
     } else {
-      b.textContent = 'Music On'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
+      b.textContent = 'Music Off'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
     }
     ui.vis();
   });
@@ -97,9 +121,9 @@ async function boot() {
     const isMuted = engine.toggleAmbienceMute();
     const b = document.getElementById('amb-btn');
     if (isMuted) {
-      b.textContent = 'SFX Off'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
+      b.textContent = 'SFX On'; b.style.color = 'var(--text-dim)'; b.setAttribute('aria-pressed', 'true');
     } else {
-      b.textContent = 'SFX On'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
+      b.textContent = 'SFX Off'; b.style.color = 'var(--gold)'; b.setAttribute('aria-pressed', 'false');
     }
   });
 
@@ -139,7 +163,6 @@ async function boot() {
     // Restore volume carried over from the previous chapter
     const savedVol = sessionStorage.getItem('aw_volume');
     if (savedVol) {
-      sessionStorage.removeItem('aw_volume');
       document.getElementById('vol').value = savedVol;
       engine.setMasterGain(savedVol);
     }

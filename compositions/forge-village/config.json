@@ -175,8 +175,8 @@
       "paceLock": 20,
       "loop": { "duration": 26.483, "bars": 16, "bpm": 145, "timeSignature": [4, 4] },
       "isOutro": true,
-      "holdDuration": 52.966,
-      "buttonRevealAt": 38
+      "holdDuration": 79.449,
+      "buttonRevealAt": 75
     }
   ],
   "stingers": [],
