@@ -78,17 +78,21 @@
     margin-bottom: 0;
   }
 
-  .placeholder-notice {
-    margin-top: 3.5rem;
-    padding: 1.2rem 1.5rem;
-    border: 1px solid var(--gold-dim);
-    border-left: 3px solid var(--gold-dim);
+  .body-text h2 {
     font-family: 'Cinzel', serif;
-    font-size: 0.5rem;
-    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--text-dim);
+    color: var(--gold);
+    margin-top: 2.6rem;
+    margin-bottom: 1.2rem;
   }
+
+  .body-text em { font-style: italic; }
+  .body-text strong { color: var(--text); font-weight: 400; font-style: italic; }
+  .body-text a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-dim); }
+  .body-text a:hover { color: var(--gold); border-bottom-color: var(--gold); }
 
   .back-link {
     display: inline-block;
@@ -132,18 +136,64 @@
   <div class="divider"></div>
 
   <div class="body-text">
-    <p>The Ancient Wanderer is an audiovisual experience built around the idea that music should be moved through, not just heard. The score is written in three chapters — three distinct sound worlds — each one unfolding as you scroll, layering stem by stem from near silence into something full.</p>
+    <p><em>The Ancient Wanderer</em> started as something else entirely. The original plan was a 25-minute fantasy game soundtrack with multiple cues, character themes, inspired by <em>The Witcher</em>. That was the project for about a week.</p>
 
-    <p>The project grew out of a frustration with how composed music is usually presented: static, front-loaded, asking the listener to sit still and receive. I wanted to write something that rewarded pace and attention, where the listener's movement through the page was itself a kind of performance.</p>
+    <p>What changed it was a conversation with my lecturer James about how I enjoy reading books while listening to film soundtracks. The <em>Dune</em> score under Frank Herbert. Harry Potter scores under Rowling. The feeling of immersion was always real, but it was always undercut by the same problem. <strong>The music didn't know where I was in the book</strong>. A fight scene would land under quiet music. A quiet conversation would land under something building toward catastrophe. The synchronisation was entirely down to chance.</p>
 
-    <p>Each chapter is built around a place: a cursed village, a forge, a fishing harbour. The music for each was composed to have a spatial quality — sounds that feel like they come from a world rather than a speaker. Stems are introduced progressively as the listener moves deeper into the scene, with ambience, melody, and rhythm arriving in sequence rather than all at once.</p>
+    <p>That mismatch became the project. Not a soundtrack to a game, but a piece of music that knew where the reader was. A soundtrack that adapted to the act of reading itself. The composition would no longer be a finished file you pressed play on. It would be assembled in the listener's browser, conducted by their own scrolling, with the right music always playing for wherever the reader happened to be.</p>
 
-    <p>Technically, the experience is built in vanilla JavaScript and Web Audio API, with a custom engine handling stem crossfades, scroll-triggered playback, and per-section gain curves. Everything runs in the browser with no frameworks.</p>
+    <h2>The first prototype</h2>
 
-    <p>More detailed writing on the compositional decisions, the technical build, and what I'd do differently is coming here.</p>
+    <p>The first thing I built wasn't music. It was eleven sine waves.</p>
+
+    <p>The goal was just to prove a concept: could scroll position trigger different audio at different points down a page? No melody, no harmony just test tones blinking in and out as I moved the browser window. It worked, and that was enough to commit.</p>
+
+    <p>The first real attempt at playback used Howler.js, an audio library I expected to handle looping precisely. It didn't, loop boundaries drifted, and gapless playback was never quite gapless. I abandoned it and switched to the Web Audio API directly, working at the level of AudioBufferSourceNode and GainNode. More work, but it gave me timing control that Howler never could.</p>
+
+    <p>From there came the first working prototype: a 16-bar loop, eleven orchestral stems, all playing simultaneously with some at full volume, some muted (at this point it was an on off switch). Scroll down and certain stems unmute; scroll back and they fade. Every 19.2 seconds a new batch of sources is scheduled and the old ones fade out, giving the illusion of reverb tails at every transition. For a prototype, it held together.</p>
+
+    <p>The main weakness was load time. Front-loading eleven audio files at once was slow on weaker connections, and the architecture didn't scale. Whatever this became, it couldn't stay like this.</p>
+
+    <p>Link to initial prototype: <strong>(Note: early prototype - not the finished project)</strong></p>
+
+    <p><a href="https://wanderer.jacklarkincomposer.co.uk/" target="_blank" rel="noopener">Early Prototype</a> https://wanderer.jacklarkincomposer.co.uk/</p>
+
+    <h2>Writing the music</h2>
+
+    <p>The composition was the part I had been looking forward to but the part that turned out to be harder than I expected in a way I hadn't anticipated.</p>
+
+    <p>With linear music, you have a start and a destination. The architecture of the piece exists in time: you move through it, tension builds and releases, the listener arrives somewhere different from where they began. Writing for this system was almost the opposite. Every loop had to function as its own self-contained unit, I had to ensure it was repeatable indefinitely, with no assumed before or after. But the loops also had to chain together, so that moving from one to the next felt like natural progression rather than a jump cut.</p>
+
+    <p>The challenge was holding both of those things at once: each loop independent, but all of them moving somewhere. I enjoyed writing the initial sketches and themes enormously with the motifs for each chapter coming quickly and feeling right almost immediately. Turning those sketches into a full system of working loops was where it got hard. You can't write forward momentum into a loop. You have to build the sense of arrival and progression into the relationship between loops rather than into the music itself.</p>
+
+    <p>The composition draws on a set of influences I had been listening to for years. Hans Zimmer for hybrid scoring and rhythmic texture. Bear McCreary for his ability to build entirely distinct sound worlds across very different projects. Hildur Guðnadóttir for a sparse, emotionally direct approach that blurs the line between composition and sound design. Lorne Balfe for how motifs can carry weight across a large-scale score. And Austin Wintory's work on <em>Journey</em>, the most direct compositional parallel to what this project was trying to do, and proof that adaptive game scoring can feel genuinely human.</p>
+
+    <p>The three chapters each needed their own sonic identity. Chapter I, <em>The Cursed Village</em>, had actually started life as the initial game audio project before this one, and it set the template: Slavic and Celtic folk instrumentation over a dark, cinematic orchestral backdrop using fujara, uilleann pipes, renaissance flutes, dulcimer. Chapter II, <em>The Forge Village</em>, pushed faster and harder, with diegetic anvil sound effects written into the rhythm of the composition itself. Chapter III, <em>The Fishing Village</em>, was the most emotionally inward of the three being softer at the core, with dissonant bells evoking empty ships anchored in a harbour.</p>
+
+    <h2>Going bigger</h2>
+
+    <p>The plan was always three chapters. What I needed to know first was whether the concept could hold at scale and whether the engine and the composition could actually survive it.</p>
+
+    <p>This is also where I had to make the decision to split it up into three separate webpages and not one continuous page. The loading just got to large and it felt more disorganised the more I added.</p>
+
+    <p>So, I built one chapter first: a complete feasibility test of the full system. When it held together, I added the second chapter, then the third, expanding the engine and the composition in parallel. This was also the stage where stingers, bespoke sound design, and the visual layers like particle systems, the custom cursor, the frequency visualiser were brought in.</p>
+
+    <h2>The world</h2>
+
+    <p>The visual layer wasn't an afterthought. Images shape how music is heard, and I wanted them to feel painterly close enough to illustration so that the seam between image and fiction wasn't visible. Finding a workflow that consistently produced that was its own process: testing platforms, refining prompts, iterating on atmosphere per chapter until each image felt like it belonged to the same world as the music. I found that the images helped the music composition process as I was able to visualise If the music really fit the scene I was descripting.</p>
+
+    <p>The layout went through three versions. The first stacked sections vertically like a blog post. The second made each section full-size, but the title would drift off screen before you had finished reading it. The third, the current one, fixes the image at 16:9 above the text with a hard height cap so the title is always visible. A small decision that changes everything about how the page feels to move through.</p>
+
+    <p>Typography is Cinzel for headings and interface elements, Cormorant Garamond for body text and the traveller lines with first-person italic quotes carrying a single voice across all three chapters. Near-black backgrounds. Gold as the only real colour. The aesthetic benchmarked against my main portfolio site.</p>
+
+    <h2>What I'd do differently</h2>
+
+    <p>If I had more time, I would give the reader more agency by branching chapter choices similar to making choices in games, creating the ability to shape the narrative's direction rather than just move through it. I would also find a way to host the entire experience on a single page, which would simplify the chapter handoff and make the journey feel more continuous.</p>
+
+    <p>The part of the project I underestimated was how much time the precision engineering would take. Getting stems to loop without drift, managing gain state when the reader scrolls rapidly, making one-shot intros hand off cleanly into their looping continuations. Each of these took far longer to solve properly than expected but it was worth doing right to make the experience as polished as possible.</p>
+
+    <p>What I wouldn't change is the central idea. The architecture exists to serve one claim: that the listener's behaviour should be audible in the music itself. A rushed reader and an attentive reader hear different performances of the same piece. That holds, and it's what I'd most want to explore again possibly in a different genre and with a different score.</p>
   </div>
-
-  <div class="placeholder-notice">More detail to follow — this page is a placeholder</div>
 
   <a href="/" class="back-link">Return to the experience</a>
 
