@@ -380,6 +380,12 @@ export function createAudioEngine(config) {
           // intro handoff, not at a stale boundary from before the intro started.
           schedNext = Math.max(schedNext, loopStartTime + currentLoopDuration);
         }, msUntilSchedule);
+        if (!stemAnalysers[id]) {
+          const a = actx.createAnalyser();
+          a.fftSize = 1024;
+          gain[id].connect(a);
+          stemAnalysers[id] = a;
+        }
         return; // gain is already set to 1 at introStartTime — skip the trailing linearRamp below
       }
     }

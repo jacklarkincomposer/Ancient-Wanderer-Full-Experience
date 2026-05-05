@@ -74,6 +74,7 @@ export function initUI(config, engine) {
     if (room.stems.length === 0 && room.drones && room.drones.length > 0) {
       const row = document.createElement('div');
       row.className = 'sc-row';
+      row.dataset.stemId = room.drones[0];
       row.innerHTML = '<span class="sc-lbl">Drone</span><div class="sc-track"><div class="sc-fill sc-fill--drone"></div></div><div class="sc-pip"></div>';
       chart.appendChild(row);
     }
