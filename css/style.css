@@ -78,7 +78,8 @@
     opacity: 1;
   }
   #intro-modal.hidden { opacity: 0; pointer-events: none; transition: opacity 0.8s; }
-  #intro-modal.pre-show { opacity: 0; pointer-events: none; }
+  #intro-modal.pre-show { pointer-events: none; }
+  #intro-modal.pre-show .intro-box { opacity: 0; }
 
   .intro-box { max-width: 640px; width: 92%; text-align: center; padding: 0 1rem; }
 
