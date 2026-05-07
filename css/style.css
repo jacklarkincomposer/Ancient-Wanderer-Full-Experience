@@ -82,15 +82,16 @@
   /* ── Intro modal ── */
   #intro-modal {
     position: fixed; inset: 0; z-index: 2000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
     background: var(--ash);
     opacity: 1;
+    overflow-y: auto;
   }
   #intro-modal.hidden { opacity: 0; pointer-events: none; transition: opacity 0.8s; }
   #intro-modal.pre-show { pointer-events: none; }
   #intro-modal.pre-show .intro-box { opacity: 0; }
 
-  .intro-box { max-width: 640px; width: 92%; text-align: center; padding: 0 1rem; }
+  .intro-box { max-width: 640px; width: 92%; text-align: center; padding: 2.5rem 1rem; margin: auto; }
 
   /* Staggered reveal animations */
   @keyframes intro-rise {
@@ -429,7 +430,9 @@
   /* ── Mobile: responsive layout ── */
   @media (max-width: 768px) {
     .scene-body { grid-template-columns: 1fr; gap: 2vh; padding: 2vh 5vw 0; }
-    .intro-box { padding: 2rem 1.5rem; }
+    .intro-box { padding: 1.8rem 1.5rem; }
+    .intro-hints { margin: 1rem 0 1.6rem; }
+    .intro-footer { margin-top: 1.2rem; }
     #controls { bottom: 1rem; right: 1rem; }
     .hero-sub { padding: 0 1.5rem; }
   }
